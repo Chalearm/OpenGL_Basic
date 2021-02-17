@@ -3,7 +3,7 @@
 	This is from http://titan.csit.rmit.edu.au/~e20068/teaching/i3dg&a/2020/tute-1.html
 
 	This is OpenGL skeleton source code.
-
+	The following skeleton code to get started with an empty window
 
 	How to build :
 
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 {
 	glutInit(&argc,argv);
 	glutInitDisplayMode(GLUT_RGB|GLUT_DOUBLE|GLUT_DEPTH);
-	glutCreateWindow("Skeleton");
+	glutCreateWindow("Tutorial 1");
 
 	init();
 
