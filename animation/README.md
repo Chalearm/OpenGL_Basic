@@ -19,3 +19,13 @@ File name: glColorCubeFlyby.c
 	* Shows that on flybys, you set the camera shape (gluPerspective in GL_PROJECTION mode) in the reshape callback, but set the camera position and orientation (gluLookAt in GL_MODELVIEW mode) for every frame you draw.
 	* Draws with GL_QUADS and the moderately ugly glVertex3iv function.
 	* Animates with a timer doing a delay of 16.6667 ms between finishing the drawing of one frame and starting the next.
+
+## Comet Ride ##
+File name: glCometRide.c
+
+	* Animates the sun and earth from the point of view of a comet.
+	* Is another flyby with a predefined flight path.
+	* Flies around a scene with multiple objects which themselves are moving.
+	* The objects are the sun and the earth, drawn as wire spheres.
+	* Animation again uses simplistic timer functions.
+
