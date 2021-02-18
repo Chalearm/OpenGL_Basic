@@ -23,6 +23,7 @@ File name: glTorus.c
 
 ## Tetrahedron ##
 File name: glTetrahedron.c
+
     *  Displays a static picture of a tetrahedron sitting on a grid "floor".
 	* Sets up a viewing volume at the beginning of the program. Uses glFrustum in order to make a perspective projection.
 	* Shows that you have to define the viewing volume when the matrix mode is GL_PROJECTION.
