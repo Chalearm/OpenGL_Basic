@@ -2,7 +2,7 @@
 	Date : 2021 Febuary 19
 	This is from https://cs.lmu.edu/~ray/notes/openglexamples/
 	
-	This is Robot arm a joint , glBouncingBalls.c
+    Bouncing Balls
 
 	How to build :
 
