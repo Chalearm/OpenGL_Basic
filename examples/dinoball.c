@@ -293,6 +293,20 @@ controlLights(int value)
   glutPostRedisplay();
 }
 
+
+void keyboard(unsigned char key, int x,int y)
+{
+  switch(key)
+  {
+    case 27:
+    case 'q':
+       exit(EXIT_SUCCESS);
+    break;
+    default:
+     break;
+  }
+}
+
 int
 main(int argc, char **argv)
 {
@@ -306,6 +320,7 @@ main(int argc, char **argv)
   glutSpaceballMotionFunc(translate);
   glutSpaceballRotateFunc(rotate);
   glutSpaceballButtonFunc(button);
+  glutKeyboardFunc(keyboard);
   glutDialsFunc(dials);
   glutCreateMenu(controlLights);
   glutAddMenuEntry("Toggle right light", 1);
