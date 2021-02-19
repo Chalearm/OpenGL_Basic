@@ -1,5 +1,5 @@
 /**
-	Date : 2021 Febuary 18
+	Date : 2021 Febuary 19
 	This is from https://cs.lmu.edu/~ray/notes/openglexamples/
 	
 	Checkerd Triangles , glCheckeredTri.c
@@ -79,6 +79,7 @@ void reshape(GLint w, GLint h)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(2,-1,5,0,0,0,0,1,0);
+	
 	glEnable(GL_TEXTURE_2D);
 	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 	glTexImage2D(GL_TEXTURE_2D,
@@ -91,6 +92,7 @@ void reshape(GLint w, GLint h)
 				  texture); 		// color components are unsigned bytes
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	
 }
 
 void keyboard(unsigned char key, int x,int y)
