@@ -35,13 +35,31 @@ reshape(int w, int h)
      system to correspond to actual window coodrinates.  This code
      wouldn't be required if you chose a (more typical in 3D) abstract
      coordinate system. */
+  glViewport(0, 0, w, h);       // Establish viewing area to cover entire window.
+  glMatrixMode(GL_PROJECTION);  // Start modifying the projection matrix.
+  glLoadIdentity();             // Reset project matrix.
+  GLfloat aspect = (GLfloat)w/(GLfloat)h;
+  if (w <= h)
+  {
+    // width is smaller, go from -50 ... 50 in width
+    glOrtho(0.0, w, 0.0, ((GLfloat)h)/aspect,-1.0,1.0);
+  }
+  else
+  {
+    // height is smaller, go from -50 .. 50 in height
+    glOrtho(0.0,w*aspect, 0.0, h,-1.0,1.0);
+  }
+  glScalef(1, -1, 1);           // Invert Y axis so increasing Y goes down. 
+  glTranslatef(0, -h, 0);       // Shift origin up to upper-left corner. 
 
-  glViewport(0, 0, w, h);       /* Establish viewing area to cover entire window. */
-  glMatrixMode(GL_PROJECTION);  /* Start modifying the projection matrix. */
-  glLoadIdentity();             /* Reset project matrix. */
-  glOrtho(0, w, 0, h, -1, 1);   /* Map abstract coords directly to window coords. */
-  glScalef(1, -1, 1);           /* Invert Y axis so increasing Y goes down. */
-  glTranslatef(0, -h, 0);       /* Shift origin up to upper-left corner. */
+/*
+
+  // Original
+  glOrtho(0, w, 0, h, -1, 1);   // Map abstract coords directly to window coords. 
+
+*/
+
+  
 }
 
 void
