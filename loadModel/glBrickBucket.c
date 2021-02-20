@@ -1,3 +1,21 @@
+/**
+	Date : 2021 Febuary 21
+	This is from http://titan.csit.rmit.edu.au/~e20068/teaching/i3dg&a/2020/tute-1.html
+
+	This is to show the brick bucket object loaded from Obj file and mtl file.
+
+	How to build :
+
+	MAC OS :
+	gcc glBrickBucket.c loadModel.c -framework GLUT -framework OpenGL -L"/System/Library/Frameworks/OpenGL.framework/Libraries" -lm -lobjc -lstdc++ -o glBrickBucket
+
+	Linux :
+
+
+	Windows:
+
+
+**/
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -34,9 +52,11 @@ void display()
 
 
 	glPushMatrix();
-		glRotatef(g_rotation,0,0.0,g_rotation2);
-		glTranslatef(g_xDistance,0.0,0.0);
-		//glRotatef(90,0,1,0);
+	glRotatef(90,0,1,0);
+	glTranslatef(0.0,g_yDistance,0.0);
+	glRotatef(g_rotation,0,0.0,23.0);
+	glTranslatef(g_xDistance,0.0,0.0);
+		
 	drawModel(&aModelLoader);
 
 	glPopMatrix();
