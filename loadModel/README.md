@@ -6,7 +6,7 @@ Based library : https://github.com/nothings/stb
 	* the Render function is based on glBegin and glEnd from OpenGL library
 	the following information are about purpose of the source code with C programming
 
-## Brick Bucket ##
+## Brick Monkey ##
 Filename : glBrickBucket.c
 	* the sample code demonstrates the using of "Model Loder" library
-	* the bucket object is loaded and its texutre is brick style
+	* the Monkey object is loaded and its texutre is brick style

@@ -2,12 +2,12 @@
 	Date : 2021 Febuary 21
 	This is from http://titan.csit.rmit.edu.au/~e20068/teaching/i3dg&a/2020/tute-1.html
 
-	This is to show the brick bucket object loaded from Obj file and mtl file.
+	This is to show the brick Monkey object loaded from Obj file and mtl file.
 
 	How to build :
 
 	MAC OS :
-	gcc glBrickBucket.c loadModel.c -framework GLUT -framework OpenGL -L"/System/Library/Frameworks/OpenGL.framework/Libraries" -lm -lobjc -lstdc++ -o glBrickBucket
+	gcc glBrickMonkey.c loadModel.c -framework GLUT -framework OpenGL -L"/System/Library/Frameworks/OpenGL.framework/Libraries" -lm -lobjc -lstdc++ -o glBrickMonkey
 
 	Linux :
 
@@ -35,16 +35,20 @@
 #endif
 
 #include "loadModel.h"
+
+
 struct modelLoader aModelLoader;
 float g_rotation = 0;
 float g_rotation2 = 0;
-float g_xDistance = 0;
-float g_yDistance = 0;
+float g_xDistance = 1;
+float g_yDistance = 1;
+int signVal = 1;
 
 // Clears the window and draw the torus.
 void display()
 {
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	// Put drawing code here 
 
 	// Draw a white torus of outer radius 3, inner radius 0.5 with 15 stacks
@@ -52,14 +56,19 @@ void display()
 
 
 	glPushMatrix();
-	glRotatef(90,0,1,0);
-	glTranslatef(0.0,g_yDistance,0.0);
-	glRotatef(g_rotation,0,0.0,23.0);
-	glTranslatef(g_xDistance,0.0,0.0);
+	glRotatef(g_rotation2,0,1,0);
+	//glTranslatef(0.0,g_yDistance,0.0);
+	glRotatef(g_rotation,1,0.0,0.0);
+	//glTranslatef(1.0,0.0,0.0);
 		
 	drawModel(&aModelLoader);
 
 	glPopMatrix();
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(g_xDistance,g_yDistance,5,0,0,0,0,1,0);
+
 	glFlush();
 
 	// Always check for errors
@@ -72,11 +81,7 @@ void display()
 // Advances the orbiter and requests to draw the next frame.
 void timer(int v)
 {
-	g_rotation = (float)((((int)g_rotation)+10)%360);
-	g_rotation2 = (float)((((int)g_rotation2)+1)%360);
-	g_xDistance = 2*cos(g_rotation*3.14);
-	g_yDistance = 2*sin(g_rotation*3.14);
-	glutPostRedisplay();
+	//glutPostRedisplay();
 	glutTimerFunc(1000/60,timer,v);
 }
 void keyboard(unsigned char key, int x,int y)
@@ -87,11 +92,40 @@ void keyboard(unsigned char key, int x,int y)
 		case 'q':
 		   exit(EXIT_SUCCESS);
 		break;
+		case 'n':
+			g_rotation = (float)(((int)g_rotation+signVal*5)%360);
+		break;
+		case 'm':
+			g_rotation2 = (float)(((int)g_rotation2+signVal*5)%360);
+		break;		
+		case 'h':
+			g_xDistance = (float)(((int)g_xDistance+signVal)%10);
+		break;
+		case 'j':
+			g_yDistance = (float)(((int)g_yDistance+signVal)%10);
+		break;
+		case '-':
+			signVal = -1;
+		break;
+		case '+':
+			signVal = 1;
 		default:
 		 break;
 	}
+	glutPostRedisplay();
 }
-
+void reshape(GLint w, GLint h)
+{
+	glViewport(0,0,w,h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(40.0, ((GLfloat)w)/((GLfloat)h),1.0,150.0);
+	glMatrixMode(GL_MODELVIEW);
+	glEnable(GL_TEXTURE_2D);
+	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+	loadTexture(&aModelLoader);
+	
+}
 void init()
 {
 	// Set the current clear color to black and the current drawing color to 
@@ -105,21 +139,21 @@ void init()
 	GLfloat white[] = {1.0,1.0,1.0,1.0};
 	GLfloat direction[] = {1.0,1.0,1.0,0.0};
 
-	glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,cyan);
+	glEnable(GL_DEPTH_TEST);
+	glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,white);
 	glMaterialfv(GL_FRONT,GL_SPECULAR,white);
 	glMaterialf(GL_FRONT,GL_SHININESS,30);
 
-	glLightfv(GL_LIGHT0,GL_AMBIENT,black);
-	glLightfv(GL_LIGHT0,GL_DIFFUSE,yellow);
+	//glLightfv(GL_LIGHT0,GL_AMBIENT,black);
+	//glLightfv(GL_LIGHT0,GL_DIFFUSE,yellow);
 	glLightfv(GL_LIGHT0,GL_SPECULAR,white);
 	glLightfv(GL_LIGHT0,GL_POSITION,direction);
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-    glEnable( GL_COLOR_MATERIAL );
-    glShadeModel( GL_SMOOTH );
+   // glEnable( GL_COLOR_MATERIAL );
+  //  glShadeModel( GL_SMOOTH );
    // glLightModeli( GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE );
-	glEnable(GL_DEPTH_TEST);
 
 	// Set the camera lens to have a 60 degree (vertical) field of view, an
 	// aspect ratio of 4/3, and have everything closer than 1 unit to the
@@ -132,22 +166,25 @@ void init()
 	// <0, 1, 0> pointing upward.
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(4,2,2,0,0,0,0,1,0);
+	gluLookAt(4,6,5,0,0,0,0,1,0);
 }
+
 // Initializes GLUT, the display mode, and main window; registers callbacks;
 // does application initialization; enters the main event loop.
 int main(int argc, char **argv)
 {
-		constructorModelLoader(&aModelLoader,"brickCyclin.obj","brickCyclin.mtl");
+	constructorModelLoader(&aModelLoader,"brickCyclin.obj","redBrick.jpg","brickCyclin.mtl");
 	loadObj(&aModelLoader);
 	glutInit(&argc,argv);
-	glutInitDisplayMode(GLUT_RGB|GLUT_SINGLE);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowPosition(80,80);
 	glutInitWindowSize(800,600);
-	glutCreateWindow("A Simple Torus");	
+	//glutSpecialFunc(special);
+	glutCreateWindow("A Brick monkey");	
 	glutTimerFunc(100,timer,0);
 
 	glutDisplayFunc(display);
+	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyboard);
 	init();
 	glutMainLoop();

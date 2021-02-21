@@ -20,10 +20,10 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #endif
-#define V_ARRAY_SIZE 500
-#define VT_ARRAY_SIZE 500
-#define VN_ARRAY_SIZE 500
-#define F_ARRAY_SIZE 500
+#define V_ARRAY_SIZE 6000
+#define VT_ARRAY_SIZE 6000
+#define VN_ARRAY_SIZE 6000
+#define F_ARRAY_SIZE 6000
 
 #define FILENAME_SIZE 40
 
@@ -46,6 +46,7 @@ struct modelLoader
 {
 	char  objFilename[FILENAME_SIZE];
 	char  mtlFilename[FILENAME_SIZE];
+	char  imageFile[FILENAME_SIZE];
 
 	struct vector3Df v[V_ARRAY_SIZE];
 	int numV;
@@ -60,6 +61,7 @@ struct modelLoader
 	int numF;
 };
 
-void constructorModelLoader(struct modelLoader *obj,const char *objFilename,const char *mtlFilename);
+void constructorModelLoader(struct modelLoader *obj,const char *objFilename,const char *imgFile,const char *mtlFilename);
 void loadObj(struct modelLoader *obj);
+void loadTexture(struct modelLoader *obj);
 void drawModel(struct modelLoader *obj);
