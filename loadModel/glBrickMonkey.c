@@ -116,6 +116,7 @@ void keyboard(unsigned char key, int x,int y)
 }
 void reshape(GLint w, GLint h)
 {
+
 	glViewport(0,0,w,h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

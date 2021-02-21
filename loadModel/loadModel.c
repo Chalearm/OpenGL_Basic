@@ -23,8 +23,10 @@ void constructorModelLoader(struct modelLoader *obj,const char *objFilename,cons
 	obj->numF = 0;
 	memset(obj->objFilename,0,objfilenameLen+1);
 	memset(obj->mtlFilename,0,mtlfilenameLen+1);
+	memset(obj->imageFile,0,imgfilenameLen+1);
 	memcpy(obj->objFilename,objFilename,objfilenameLen);
 	memcpy(obj->mtlFilename,mtlFilename,mtlfilenameLen);
+	memcpy(obj->imageFile,imgFile,imgfilenameLen);
 
 }
 void loadObj(struct modelLoader *obj)
@@ -82,7 +84,7 @@ void drawModel(struct modelLoader *obj)
 			indexV = obj->f[index+index2].x -1;
 			indexVt = obj->f[index+index2].y -1;
 			indexVn = obj->f[index+index2].z -1;
-			//glColor3f(0.5+(float)index/200.0,0.2,0.1+(float)index/100.0);
+		//	glColor3f(0.5+(float)index/200.0,0.2,0.1+(float)index/100.0);
 			glNormal3fv(obj->vn[indexVn].dat);
 			glTexCoord2f(obj->vt[indexVt].dat[0], obj->vt[indexVt].dat[1]);
 			glVertex3fv(obj->v[indexV].dat);
@@ -112,9 +114,9 @@ if (data)
 {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
-}
+	}
 else
-{
+{printf("skdlskdlskjk\n");
 
 }
 	stbi_image_free(data);
