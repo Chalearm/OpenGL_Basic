@@ -26,7 +26,7 @@
 #if __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
+#define __gl_h_
 #include <GLUT/glut.h>
 #else
 #include <GL/gl.h>
@@ -62,7 +62,7 @@ void display()
 	//glTranslatef(1.0,0.0,0.0);
 		
 	drawModel(&aModelLoader);
-
+	//renderModel(&aModelLoader);
 	glPopMatrix();
 
 	glMatrixMode(GL_MODELVIEW);
@@ -168,6 +168,7 @@ void init()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(4,6,5,0,0,0,0,1,0);
+	loadObjToVBuffs(&aModelLoader);
 }
 
 // Initializes GLUT, the display mode, and main window; registers callbacks;
@@ -176,8 +177,10 @@ int main(int argc, char **argv)
 {
 	constructorModelLoader(&aModelLoader,"brickCyclin.obj","redBrick.jpg","brickCyclin.mtl");
 	loadObj(&aModelLoader);
+
 	glutInit(&argc,argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+
 	glutInitWindowPosition(80,80);
 	glutInitWindowSize(800,600);
 	//glutSpecialFunc(special);
@@ -188,6 +191,7 @@ int main(int argc, char **argv)
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyboard);
 	init();
+
 	glutMainLoop();
 
 	return EXIT_SUCCESS;

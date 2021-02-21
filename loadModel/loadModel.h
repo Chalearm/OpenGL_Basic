@@ -13,12 +13,17 @@
 #if __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
+#define __gl_h_
 #include <GLUT/glut.h>
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
+#endif
+#ifdef __APPLE__
+#define glGenVertexArrays glGenVertexArraysAPPLE
+#define glBindVertexArray glBindVertexArrayAPPLE
+#define glDeleteVertexArrays glDeleteVertexArraysAPPLE
 #endif
 #define V_ARRAY_SIZE 40000
 #define VT_ARRAY_SIZE 40000
@@ -47,21 +52,22 @@ struct modelLoader
 	char  objFilename[FILENAME_SIZE];
 	char  mtlFilename[FILENAME_SIZE];
 	char  imageFile[FILENAME_SIZE];
-
+	struct vector3DI f[F_ARRAY_SIZE];
+	struct vector3Df vn[VN_ARRAY_SIZE];
+	struct vector2Df vt[VT_ARRAY_SIZE];
 	struct vector3Df v[V_ARRAY_SIZE];
 	int numV;
-
-	struct vector2Df vt[VT_ARRAY_SIZE];
-	int numVt;
-
-	struct vector3Df vn[VN_ARRAY_SIZE];
 	int numVn;
-
-	struct vector3DI f[F_ARRAY_SIZE];
+	int numVt;
 	int numF;
+
+        //  render data
+    unsigned int VAO, VBO, EBO;
 };
 
 void constructorModelLoader(struct modelLoader *obj,const char *objFilename,const char *imgFile,const char *mtlFilename);
 void loadObj(struct modelLoader *obj);
 void loadTexture(struct modelLoader *obj);
+void loadObjToVBuffs(struct modelLoader *obj);
 void drawModel(struct modelLoader *obj);
+void renderModel(struct modelLoader *obj);

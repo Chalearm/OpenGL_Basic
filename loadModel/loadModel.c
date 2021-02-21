@@ -63,6 +63,7 @@ void loadObj(struct modelLoader *obj)
 	}
 
 	fclose(fp);
+	printf("face size : %d \n",(int)sizeof(struct vector3DI));
 }
 
 
@@ -110,14 +111,64 @@ glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height, nrChannels;
 	unsigned char *data = stbi_load(obj->imageFile, &width, &height, &nrChannels, 0); 
-if (data)
-{
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
+	if (data)
+	{
+    	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    	glGenerateMipmap(GL_TEXTURE_2D);
 	}
-else
-{printf("skdlskdlskjk\n");
+	else
+	{
 
-}
+	}
 	stbi_image_free(data);
+}
+
+/*
+	struct vector3Df v[V_ARRAY_SIZE];
+	int numV;
+
+	struct vector2Df vt[VT_ARRAY_SIZE];
+	int numVt;
+
+	struct vector3Df vn[VN_ARRAY_SIZE];
+	int numVn;
+
+	struct vector3DI f[F_ARRAY_SIZE];
+	int numF;
+*/
+void loadObjToVBuffs(struct modelLoader *obj)
+{
+	int vboBuffsize = sizeof(struct vector3Df)*obj->numV;
+	vboBuffsize += sizeof(struct vector2Df)*obj->numVt;
+	vboBuffsize += sizeof(struct vector3Df)*obj->numVn;
+	// Set up the element array buffer (EBO)
+	glGenBuffers(1,&(obj->EBO));
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj->EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,obj->numF*sizeof(struct vector3DI),obj->f,GL_STATIC_DRAW);
+
+	// Set up the vertex attributes
+	glGenVertexArrays(1,&(obj->VAO));
+	glBindVertexArray(obj->VAO);
+
+	glGenBuffers(1,&(obj->VBO));
+	glBindBuffer(GL_ARRAY_BUFFER,obj->VBO);
+	glBufferData(GL_ARRAY_BUFFER,vboBuffsize,NULL,GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(struct vector3Df)*obj->numVn,obj->vn);
+	glBufferSubData(GL_ARRAY_BUFFER,sizeof(struct vector3Df)*obj->numVn,sizeof(struct vector2Df)*obj->numVt,obj->vt);
+	glBufferSubData(GL_ARRAY_BUFFER,sizeof(struct vector3Df)*obj->numVn+sizeof(struct vector2Df)*obj->numVt,sizeof(struct vector3Df)*obj->numV,obj->v);
+
+	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0 ,NULL);
+	glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0 ,(const GLvoid *)(sizeof(struct vector3Df)*obj->numVn));
+	glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,0 ,(const GLvoid *)(sizeof(struct vector2Df)*obj->numVt+sizeof(struct vector3Df)*obj->numVn));
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+}
+
+
+void renderModel(struct modelLoader *obj)
+{
+	glBindVertexArray(obj->VAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,obj->EBO);
+	glDrawElements(GL_TRIANGLES,obj->numF*sizeof(struct vector3DI),GL_UNSIGNED_INT,NULL);
 }
