@@ -20,10 +20,10 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #endif
-#define V_ARRAY_SIZE 6000
-#define VT_ARRAY_SIZE 6000
-#define VN_ARRAY_SIZE 6000
-#define F_ARRAY_SIZE 6000
+#define V_ARRAY_SIZE 40000
+#define VT_ARRAY_SIZE 40000
+#define VN_ARRAY_SIZE 40000
+#define F_ARRAY_SIZE 40000
 
 #define FILENAME_SIZE 40
 
