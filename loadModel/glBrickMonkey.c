@@ -168,14 +168,14 @@ void init()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(4,6,5,0,0,0,0,1,0);
-	loadObjToVBuffs(&aModelLoader);
+	//loadObjToVBuffs(&aModelLoader);
 }
 
 // Initializes GLUT, the display mode, and main window; registers callbacks;
 // does application initialization; enters the main event loop.
 int main(int argc, char **argv)
 {
-	constructorModelLoader(&aModelLoader,"brickCyclin.obj","redBrick.jpg","brickCyclin.mtl");
+	constructorModelLoader(&aModelLoader,"wavefrontOBJ/brickCyclin.obj","texture/redBrick.jpg","wavefrontOBJ/brickCyclin.mtl");
 	loadObj(&aModelLoader);
 
 	glutInit(&argc,argv);
