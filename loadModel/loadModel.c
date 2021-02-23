@@ -56,14 +56,22 @@ void loadObj(struct modelLoader *obj)
 		}
 		else if(buff[0]=='f')
 		{
-			sscanf(&buff[2],"%d/%d/%d %d/%d/%d %d/%d/%d\n",&(obj->f[obj->numF].x),&(obj->f[obj->numF].y),&(obj->f[obj->numF].z),&(obj->f[obj->numF+1].x),&(obj->f[obj->numF+1].y),&(obj->f[obj->numF+1].z),&(obj->f[obj->numF+2].x),&(obj->f[obj->numF+2].y),&(obj->f[obj->numF+2].z));
+			sscanf(&buff[2],"%d/%d/%d %d/%d/%d %d/%d/%d\n",&(obj->f[obj->numF].x),&(obj->f[obj->numF].z),&(obj->f[obj->numF].y),&(obj->f[obj->numF+1].x),&(obj->f[obj->numF+1].z),&(obj->f[obj->numF+1].y),&(obj->f[obj->numF+2].x),&(obj->f[obj->numF+2].z),&(obj->f[obj->numF+2].y));
 			//printf("fj %d/%d/%d %d/%d/%d %d/%d/%d\n",obj->f[obj->numF].x,obj->f[obj->numF].y,obj->f[obj->numF].z,obj->f[obj->numF+1].x,obj->f[obj->numF+1].y,obj->f[obj->numF+1].z,obj->f[obj->numF+2].x,obj->f[obj->numF+2].y,obj->f[obj->numF+2].z);
+			obj->f[obj->numF].x--;
+			obj->f[obj->numF].y--;
+			obj->f[obj->numF].z--;
+			obj->f[obj->numF+1].x--;
+			obj->f[obj->numF+1].y--;
+			obj->f[obj->numF+1].z--;
+			obj->f[obj->numF+2].x--;
+			obj->f[obj->numF+2].y--;
+			obj->f[obj->numF+2].z--;
 			obj->numF += 3;
 		}
 	}
 
 	fclose(fp);
-	printf("face size : %d \n",(int)sizeof(struct vector3DI));
 }
 
 
@@ -82,9 +90,9 @@ void drawModel(struct modelLoader *obj)
 
 		for(index2 = 0;index2 <3;index2++)
 		{		
-			indexV = obj->f[index+index2].x -1;
-			indexVt = obj->f[index+index2].y -1;
-			indexVn = obj->f[index+index2].z -1;
+			indexV = obj->f[index+index2].x;
+			indexVt = obj->f[index+index2].z;
+			indexVn = obj->f[index+index2].y;
 		//	glColor3f(0.5+(float)index/200.0,0.2,0.1+(float)index/100.0);
 			glNormal3fv(obj->vn[indexVn].dat);
 			glTexCoord2f(obj->vt[indexVt].dat[0], obj->vt[indexVt].dat[1]);
@@ -135,7 +143,7 @@ glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	struct vector3DI f[F_ARRAY_SIZE];
 	int numF;
-*/
+
 void loadObjToVBuffs(struct modelLoader *obj)
 {
 	int vboBuffsize = sizeof(struct vector3Df)*obj->numV;
@@ -153,22 +161,22 @@ void loadObjToVBuffs(struct modelLoader *obj)
 	glGenBuffers(1,&(obj->VBO));
 	glBindBuffer(GL_ARRAY_BUFFER,obj->VBO);
 	glBufferData(GL_ARRAY_BUFFER,vboBuffsize,NULL,GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(struct vector3Df)*obj->numVn,obj->vn);
-	glBufferSubData(GL_ARRAY_BUFFER,sizeof(struct vector3Df)*obj->numVn,sizeof(struct vector2Df)*obj->numVt,obj->vt);
-	glBufferSubData(GL_ARRAY_BUFFER,sizeof(struct vector3Df)*obj->numVn+sizeof(struct vector2Df)*obj->numVt,sizeof(struct vector3Df)*obj->numV,obj->v);
+	glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(struct vector3Df)*obj->numV,obj->v);
+	glBufferSubData(GL_ARRAY_BUFFER,sizeof(struct vector3Df)*obj->numV,sizeof(struct vector3Df)*obj->numVn,obj->vn);
+	glBufferSubData(GL_ARRAY_BUFFER,sizeof(struct vector3Df)*obj->numVn+sizeof(struct vector3Df)*obj->numV,sizeof(struct vector2Df)*obj->numVt,obj->vt);
 
 	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0 ,NULL);
-	glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0 ,(const GLvoid *)(sizeof(struct vector3Df)*obj->numVn));
-	glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,0 ,(const GLvoid *)(sizeof(struct vector2Df)*obj->numVt+sizeof(struct vector3Df)*obj->numVn));
+	glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,0 ,(const GLvoid *)(sizeof(struct vector3Df)*obj->numV));
+	glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,0 ,(const GLvoid *)(sizeof(struct vector3Df)*obj->numV+sizeof(struct vector3Df)*obj->numVn));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 }
-
+*/
 
 void renderModel(struct modelLoader *obj)
 {
 	glBindVertexArray(obj->VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,obj->EBO);
-	glDrawElements(GL_TRIANGLES,obj->numF*sizeof(struct vector3DI),GL_UNSIGNED_INT,NULL);
+	glDrawElements(GL_TRIANGLES,obj->numF*3,GL_UNSIGNED_INT,NULL);
 }

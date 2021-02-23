@@ -25,10 +25,10 @@
 #define glBindVertexArray glBindVertexArrayAPPLE
 #define glDeleteVertexArrays glDeleteVertexArraysAPPLE
 #endif
-#define V_ARRAY_SIZE 40000
-#define VT_ARRAY_SIZE 40000
-#define VN_ARRAY_SIZE 40000
-#define F_ARRAY_SIZE 40000
+#define V_ARRAY_SIZE 30000
+#define VT_ARRAY_SIZE 30000
+#define VN_ARRAY_SIZE 30000
+#define F_ARRAY_SIZE 30000
 
 #define FILENAME_SIZE 40
 
@@ -68,6 +68,6 @@ struct modelLoader
 void constructorModelLoader(struct modelLoader *obj,const char *objFilename,const char *imgFile,const char *mtlFilename);
 void loadObj(struct modelLoader *obj);
 void loadTexture(struct modelLoader *obj);
-void loadObjToVBuffs(struct modelLoader *obj);
+//void loadObjToVBuffs(struct modelLoader *obj);
 void drawModel(struct modelLoader *obj);
-void renderModel(struct modelLoader *obj);
+//void renderModel(struct modelLoader *obj);
