@@ -47,6 +47,9 @@ float g_rotation2 = 0;
 float g_xDistance = 6;
 float g_yDistance = 6;
 float g_fingersEnlarge = 0;
+int enableWireFrame = 0;
+int enableCullBack = 0;
+int enableBlendAlpha = 0;
 
 float kk1 = 0;
 float kk2 = 0;
@@ -67,7 +70,25 @@ void display()
 	// Draw a white torus of outer radius 3, inner radius 0.5 with 15 stacks
 	// and 30 slices.
 
+ 
+  if(enableCullBack ==1)
+  {
 
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+  }
+  else
+  {
+  	glDisable(GL_CULL_FACE);
+  }
+
+if(enableWireFrame ==1)
+{
+//glPolygonMode(GL_FRONT, GL_LINE);
+//glPolygonMode(GL_BACK, GL_LINE);
+	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
+}
 	glPushMatrix();
 
 	glRotatef((GLfloat)g_rotation,0.0,1.0,0.0);
@@ -106,6 +127,7 @@ void display()
 
 
 			glTranslatef(0.0,0.0,3.0);
+
 	drawModel(&aJointPart);
 
 
@@ -118,6 +140,7 @@ void display()
 	//glRotatef((GLfloat)kk2,kk4,kk5,kk6);
 	drawModel(&aFinger);
 	glPopMatrix();
+	// Turn off wireframe mode
 
 	glTranslatef(-0.3+kk4,-2.0+g_fingersEnlarge,2.0+kk6);
 	glRotatef((GLfloat)90,1.0,0.0,0.0);
@@ -131,11 +154,16 @@ void display()
 	glPopMatrix();
 
 
-
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(g_xDistance,g_yDistance,7,0,0,0,0,1,0);
-
+if(enableWireFrame == 1)
+{
+glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+//glPolygonMode(GL_FRONT, GL_FILL);
+//glPolygonMode(GL_BACK, GL_FILL);
+}
+ 
 	glFlush();
 
 	// Always check for errors
@@ -197,6 +225,33 @@ void keyboard(unsigned char key, int x,int y)
 		case '-':
 			signVal = -1;
 		break;
+		case 'i':
+		enableBlendAlpha = (enableBlendAlpha+1)%2;
+			if(enableBlendAlpha == 1)
+			{
+				            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnable(GL_BLEND);
+            glEnable(GL_POINT_SMOOTH);
+            glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+            glEnable(GL_LINE_SMOOTH);
+            glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+            glEnable(GL_POLYGON_SMOOTH);
+            glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+			}
+			else
+			{
+				   glDisable(GL_BLEND);
+            glDisable(GL_LINE_SMOOTH);
+            glDisable(GL_POINT_SMOOTH);
+            glDisable(GL_POLYGON_SMOOTH);
+			}
+		break;
+		case 'o':
+		enableCullBack = (enableCullBack+1)%2;
+		break;
+		case 'p':
+			enableWireFrame = (enableWireFrame+1)%2;
+			break;
 		case '+':
 			signVal = 1;
 		default:
@@ -234,6 +289,7 @@ void init()
 	GLfloat direction[] = {1.0,1.0,1.0,0.0};
 
 	glEnable(GL_DEPTH_TEST);
+
 	glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,white);
 	glMaterialfv(GL_FRONT,GL_SPECULAR,white);
 	glMaterialf(GL_FRONT,GL_SHININESS,30);
