@@ -57,6 +57,12 @@
 #define UPDATE_EYE_X 6
 #define UPDATE_EYE_Y 7
 #define UPDATE_EYE_Z 8
+#define UPDATE_CENT_X 9
+#define UPDATE_CENT_Y 10
+#define UPDATE_CENT_Z 11
+#define UPDATE_UP_X 12
+#define UPDATE_UP_Y 13
+#define UPDATE_UP_Z 14
 
 struct vector3Df
 {
@@ -86,15 +92,10 @@ struct modelLoader
 	int numVn;
 	int numVt;
 	int numF;
-
-	//  render data
-	unsigned int VAO, VBO, EBO;
 };
 struct armControlParameter
 {
 	double jointRadian[5][3]; // x,y ,z
-
-	//double jointHandRad[3];
 	double fingersWidth;
 };
 void constructorModelLoader(struct modelLoader* obj, const char* objFilename, const char* imgFile);
@@ -105,16 +106,12 @@ double cameraControl(int controlParameter,int controlParameter2);
 double armControl(int controlParameter,int controlParameter2);
 void drawRobotArm(struct armControlParameter *obj);
 double boundValue(const double max,const double min,const double original);
+int inRange(const double max,const double min,const double value);
 void setColorLight(GLfloat *color);
 struct modelLoader aModelLoader;
 struct modelLoader aJointPart;
 struct modelLoader aFinger;
 struct armControlParameter armParam;
-float g_rotation = 0;
-float g_rotation2 = 0;
-float g_xDistance = 6;
-float g_yDistance = 6;
-float g_fingersEnlarge = 0;
 int enableWireFrame = 0;
 int enableCullBack = 0;
 int changeLight = 0;
@@ -125,12 +122,6 @@ int changeLight = 0;
 #define red  {1.0,0.0,0.0,1.0}
 #define blue  {0.0,0.0,1.0,1.0}
 GLfloat colorSet[][4] = {white,yellow,cyan,red,blue};
-float kk1 = 0;
-float kk2 = 0;
-float kk3 = 0;
-float kk4 = 0;
-float kk5 = 0;
-float kk6 = 0;
 
 int signVal = 1;
 
@@ -239,32 +230,32 @@ void keyboard(unsigned char key, int x, int y)
 	case 'm':
 		armControl(CONTROL_PARAM3,5);
 		break;
-	case 'h':
+	case 'j':
 		 cameraControl(UPDATE_EYE_Z,5*signVal);
 		break;
 	case 'e':
 		armControl(RESET_ARM_PARAM,0);
-		break;
+		break;//UPDATE_CENT_X
 	case 'r':
 		cameraControl(RESET_CAMERA_POS,0);
 		break;
 	case 'f':
-		kk1 = (float)(((int)kk1 + 5 * signVal) % 360);
+		 cameraControl(UPDATE_CENT_X,signVal);
 		break;
 	case 'g':
-		kk2 = (float)(((int)kk2 + 5 * signVal) % 360);
+		 cameraControl(UPDATE_CENT_Y,signVal);
 		break;
-	case 'd':
-		kk3 = (float)(((int)kk3 + 5 * signVal) % 360);
-		break;
+	case 'h':
+		 cameraControl(UPDATE_CENT_Z,signVal);
+		break;//UPDATE_UP_Z
 	case 't':
-		kk4 = kk4 + 0.1 * signVal;
+		 cameraControl(UPDATE_UP_X,signVal);
 		break;
 	case 'y':
-		kk5 = kk5 + 0.1 * signVal;
+		 cameraControl(UPDATE_UP_Y,signVal);
 		break;
 	case 'u':
-		kk6 = kk6 + 0.1 * signVal;
+		 cameraControl(UPDATE_UP_Z,signVal);
 		break;
 	case '-':
 		signVal = -1;
@@ -284,7 +275,6 @@ void keyboard(unsigned char key, int x, int y)
 	default:
 		break;
 	}
-	printf("kk(%f,%f,%f, %f, %f,%f)\n", kk1, kk2, kk3, kk4, kk5, kk6);
 	glutPostRedisplay();
 }
 void reshape(GLint w, GLint h)
@@ -315,11 +305,7 @@ void init()
 
 
 	glEnable(GL_DEPTH_TEST);
-
 	setColorLight(colorSet[0]);
-	// glEnable( GL_COLOR_MATERIAL );
-   //  glShadeModel( GL_SMOOTH );
-	// glLightModeli( GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE );
 
 	 // Set the camera lens to have a 60 degree (vertical) field of view, an
 	 // aspect ratio of 4/3, and have everything closer than 1 unit to the
@@ -499,21 +485,16 @@ void drawRobotArm(struct armControlParameter *obj)
 
 
 	glPushMatrix();
-	glTranslatef(-0.3 - kk4, 1.9 - armParam.fingersWidth , 2.0 - kk6);
-	//glRotatef((GLfloat)kk1,0.0,1.0,0.0);
-	//glRotatef((GLfloat)kk2,0.0,0.0,1.0);
+	glTranslatef(-0.3, 2.0 - armParam.fingersWidth , 2.0);
 	glRotatef((GLfloat)-185, 0.0, 1.0, 1.0);
 
-	//glRotatef((GLfloat)kk2,kk4,kk5,kk6);
 	drawModel(&aFinger);
 	glPopMatrix();
 	// Turn off wireframe mode
 
-	glTranslatef(-0.3 + kk4, -2.0 + armParam.fingersWidth , 2.0 + kk6);
+	glTranslatef(-0.3, -2.0 + armParam.fingersWidth , 2.0);
 	glRotatef((GLfloat)90, 1.0, 0.0, 0.0);
 	glRotatef((GLfloat)5.0, 0.0, 0.0, 1.0);
-
-	//glRotatef((GLfloat)kk1,kk4,kk5,kk6);
 	drawModel(&aFinger);
 
 	glPopMatrix();
@@ -524,29 +505,33 @@ void drawRobotArm(struct armControlParameter *obj)
 double cameraControl(int controlParameter,int controlParameter2)
 {
 	double ret = 0;
+	int i =0;
 	static int isAutomave = 0;
 	static GLfloat u = 0.0;
-	static GLdouble eyex = 0.0;
-	static GLdouble eyey = 0.0; 
-	static GLdouble eyez = 0.0; 
-
+	static GLdouble eye[3];
+	static GLdouble center[3]; 
+	static GLdouble up[3];
+//UPDATE_UP_X
 	// read parameter
-	if (controlParameter == UPDATE_EYE_X)
+	if (inRange(UPDATE_EYE_Z,UPDATE_EYE_X,controlParameter) == 1)
 	{
-		eyex = boundValue(100,-50,eyex+controlParameter2);	
-		printf("eyex :%f \n",eyex);
-		ret = eyex;
+		i = controlParameter - UPDATE_EYE_X;
+		eye[i] = boundValue(100,-50,eye[i]+controlParameter2);	 
+		ret = eye[i];
 	}
-	else if (controlParameter == UPDATE_EYE_Y)
+	else if (inRange(UPDATE_CENT_Z,UPDATE_CENT_X,controlParameter) == 1)
 	{
-		eyey = boundValue(100,-50,eyey+controlParameter2);		
-		printf("eyey :%f \n",eyey);
-		ret = eyey;
+
+		i = controlParameter - UPDATE_CENT_X;
+		center[i] = boundValue(100,-50,center[i]+controlParameter2);
+		ret = center[i];
 	}
-	else if (controlParameter == UPDATE_EYE_Z)
+	else if (inRange(UPDATE_UP_Z,UPDATE_UP_X,controlParameter) == 1)
 	{
-		eyez = boundValue(100,-50,eyez+controlParameter2);
-		ret = eyez;
+
+		i = controlParameter - UPDATE_UP_X;
+		up[i] = boundValue(100,-50,up[i]+controlParameter2);
+		ret = up[i];
 	}
 	else if ((controlParameter == INITIAL_CAMERA) && (isAutomave == 0))
 	{	
@@ -554,9 +539,14 @@ double cameraControl(int controlParameter,int controlParameter2)
 	}
 	else if(controlParameter == RESET_CAMERA_POS)
 	{
-		eyex = 0;
-		eyey = 0;
-		eyez = 0;
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+		for(i = 0;i<3;i++)
+		{
+			center[0] = 0;
+			eye[i] = 0;
+			up[i] = 0;
+		}
 		u = 0;
 	}
 	else if(controlParameter == ENABLE_AUTOMOVE_CAMERA)
@@ -582,7 +572,7 @@ double cameraControl(int controlParameter,int controlParameter2)
 
 	}
 	glLoadIdentity();
-	gluLookAt(10*cos(u)+eyex,10*cos(u)+eyey,eyez+40*cos(u/3)+2,kk1,kk2,kk3,cos(u)+kk4,1+kk5,0+kk6);
+	gluLookAt(10*cos(u)+eye[0],10*cos(u)+eye[1],eye[2]+40*cos(u/3)+2,center[0],center[1],center[2],cos(u)+up[0],up[1],up[2]);
 	glutPostRedisplay();
 	return ret;
 }
@@ -632,7 +622,6 @@ double armControl(int controlParameter,int controlParameter2)
 		{
 			armParam.fingersWidth = boundValue(1.2,0.0,armParam.fingersWidth+ controlParameter2/50.0);
 		}
-		printf("whihci part : %d \n",(whichPartIsControled-CONTROL_JOINT1));
 	}
 	else if (controlParameter == RESET_ARM_PARAM)
 	{
@@ -667,13 +656,21 @@ void setColorLight(GLfloat *color)
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, color);
 	glMaterialf(GL_FRONT, GL_SHININESS, 50);
-	//glLightfv(GL_LIGHT0,GL_AMBIENT,black);
-	//glLightfv(GL_LIGHT0,GL_DIFFUSE,yellow);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, color);
 	glLightfv(GL_LIGHT0, GL_POSITION, direction);
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+}
+
+int inRange(const double max,const double min,const double value)
+{
+	int ret = 0;
+	if ((value <= max) && (value >=min))
+	{
+		ret = 1;
+	}
+	return ret;
 }
 double boundValue(const double max,const double min,const double original)
 {
