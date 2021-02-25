@@ -1,10 +1,5 @@
 
 
-#include <stdlib.h>
-#include <math.h>
-#include <stdio.h>
-#include <time.h>
-
 #if _WIN32
 #define _CRT_SECURE_NO_WARNINGS
 #include "Include/glew.h"
@@ -22,6 +17,11 @@
 #include <GL/glut.h>
 #endif
 
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <time.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define V_ARRAY_SIZE 30000
@@ -102,12 +102,12 @@ void constructorModelLoader(struct modelLoader* obj, const char* objFilename, co
 void loadObj(struct modelLoader* obj);
 void loadTexture(struct modelLoader* obj);
 void drawModel(struct modelLoader* obj);
-double cameraControl(int controlParameter,int controlParameter2);
-double armControl(int controlParameter,int controlParameter2);
-void drawRobotArm(struct armControlParameter *obj);
-double boundValue(const double max,const double min,const double original);
-int inRange(const double max,const double min,const double value);
-void setColorLight(GLfloat *color);
+double cameraControl(int controlParameter, int controlParameter2);
+double armControl(int controlParameter, int controlParameter2);
+void drawRobotArm(struct armControlParameter* obj);
+double boundValue(const double max, const double min, const double original);
+int inRange(const double max, const double min, const double value);
+void setColorLight(GLfloat* color);
 struct modelLoader aModelLoader;
 struct modelLoader aJointPart;
 struct modelLoader aFinger;
@@ -121,7 +121,7 @@ int changeLight = 0;
 #define cyan  { 0.0,1.0,1.0,1.0 }
 #define red  {1.0,0.0,0.0,1.0}
 #define blue  {0.0,0.0,1.0,1.0}
-GLfloat colorSet[][4] = {white,yellow,cyan,red,blue};
+GLfloat colorSet[][4] = { white,yellow,cyan,red,blue };
 
 int signVal = 1;
 
@@ -150,7 +150,7 @@ void display()
 	}
 	drawRobotArm(&armParam);
 
-	cameraControl(INITIAL_CAMERA,0);
+	cameraControl(INITIAL_CAMERA, 0);
 	if (enableWireFrame == 1)
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -169,27 +169,27 @@ void display()
 void timer(int v)
 {
 
-	cameraControl(0,0); 
-	armControl(0,0);
+	cameraControl(0, 0);
+	armControl(0, 0);
 	glutPostRedisplay();
-	glutTimerFunc(1000/60.0, timer,v);
+	glutTimerFunc(1000 / 60.0, timer, v);
 }
-void special(int key, int a,int b)
+void special(int key, int a, int b)
 {
 	switch (key)
 	{
-		case GLUT_KEY_LEFT : 
+	case GLUT_KEY_LEFT:
 		//moveLeftCamera(&aCamera);
-		cameraControl(UPDATE_EYE_X,-5);
+		cameraControl(UPDATE_EYE_X, -5);
 		break;
-		case GLUT_KEY_RIGHT:
-		cameraControl(UPDATE_EYE_X,5);
+	case GLUT_KEY_RIGHT:
+		cameraControl(UPDATE_EYE_X, 5);
 		break;
-		case GLUT_KEY_UP:
-		cameraControl(UPDATE_EYE_Y,-5);
+	case GLUT_KEY_UP:
+		cameraControl(UPDATE_EYE_Y, -5);
 		break;
-		case GLUT_KEY_DOWN:
-		cameraControl(UPDATE_EYE_Y,5);
+	case GLUT_KEY_DOWN:
+		cameraControl(UPDATE_EYE_Y, 5);
 		break;
 	}
 	glutPostRedisplay();
@@ -204,58 +204,58 @@ void keyboard(unsigned char key, int x, int y)
 		exit(EXIT_SUCCESS);
 		break;
 	case 'a':
-		cameraControl(DISABLE_AUTOMOVE_CAMERA+(((int)cameraControl(IS_AUTOMOVE_CAMERA,0)+1)%2),0);
+		cameraControl(DISABLE_AUTOMOVE_CAMERA + (((int)cameraControl(IS_AUTOMOVE_CAMERA, 0) + 1) % 2), 0);
 		break;
 	case 's':
-		armControl(DISABLE_AUTO_ARM_MOVE+(((int)armControl(IS_AUTOMOVE_ARM,0)+1)%2),0);	
-	break;
+		armControl(DISABLE_AUTO_ARM_MOVE + (((int)armControl(IS_AUTOMOVE_ARM, 0) + 1) % 2), 0);
+		break;
 	case 'z':
-		armControl(CHANGE_CONTROL_PART, 5+((int)armControl(WHICH_IS_CONTROL,0)-4)%6);
+		armControl(CHANGE_CONTROL_PART, 5 + ((int)armControl(WHICH_IS_CONTROL, 0) - 4) % 6);
 		break;
 	case 'x':
-		armControl(CONTROL_PARAM1,-5);
+		armControl(CONTROL_PARAM1, -5);
 		break;
 	case 'c':
-		armControl(CONTROL_PARAM1,5);
+		armControl(CONTROL_PARAM1, 5);
 		break;
 	case 'v':
-		armControl(CONTROL_PARAM2,-5);
+		armControl(CONTROL_PARAM2, -5);
 		break;
 	case 'b':
-		armControl(CONTROL_PARAM2,5);
+		armControl(CONTROL_PARAM2, 5);
 		break;
 	case 'n':
-		armControl(CONTROL_PARAM3,-5);
+		armControl(CONTROL_PARAM3, -5);
 		break;
 	case 'm':
-		armControl(CONTROL_PARAM3,5);
+		armControl(CONTROL_PARAM3, 5);
 		break;
 	case 'j':
-		 cameraControl(UPDATE_EYE_Z,5*signVal);
+		cameraControl(UPDATE_EYE_Z, 5 * signVal);
 		break;
 	case 'e':
-		armControl(RESET_ARM_PARAM,0);
-		break;//UPDATE_CENT_X
+		armControl(RESET_ARM_PARAM, 0);
+		break;
 	case 'r':
-		cameraControl(RESET_CAMERA_POS,0);
+		cameraControl(RESET_CAMERA_POS, 0);
 		break;
 	case 'f':
-		 cameraControl(UPDATE_CENT_X,signVal);
+		cameraControl(UPDATE_CENT_X, signVal);
 		break;
 	case 'g':
-		 cameraControl(UPDATE_CENT_Y,signVal);
+		cameraControl(UPDATE_CENT_Y, signVal);
 		break;
 	case 'h':
-		 cameraControl(UPDATE_CENT_Z,signVal);
+		cameraControl(UPDATE_CENT_Z, signVal);
 		break;//UPDATE_UP_Z
 	case 't':
-		 cameraControl(UPDATE_UP_X,signVal);
+		cameraControl(UPDATE_UP_X, signVal);
 		break;
 	case 'y':
-		 cameraControl(UPDATE_UP_Y,signVal);
+		cameraControl(UPDATE_UP_Y, signVal);
 		break;
 	case 'u':
-		 cameraControl(UPDATE_UP_Z,signVal);
+		cameraControl(UPDATE_UP_Z, signVal);
 		break;
 	case '-':
 		signVal = -1;
@@ -307,16 +307,16 @@ void init()
 	glEnable(GL_DEPTH_TEST);
 	setColorLight(colorSet[0]);
 
-	 // Set the camera lens to have a 60 degree (vertical) field of view, an
-	 // aspect ratio of 4/3, and have everything closer than 1 unit to the
-	 // camera and greater than 40 units distant clipped away.
+	// Set the camera lens to have a 60 degree (vertical) field of view, an
+	// aspect ratio of 4/3, and have everything closer than 1 unit to the
+	// camera and greater than 40 units distant clipped away.
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(50.0, 4.0 / 3.0, 1, 40);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	cameraControl(INITIAL_CAMERA,0);
+	cameraControl(INITIAL_CAMERA, 0);
 	//loadObjToVBuffs(&aModelLoader);
 }
 
@@ -368,43 +368,49 @@ void constructorModelLoader(struct modelLoader* obj, const char* objFilename, co
 void loadObj(struct modelLoader* obj)
 {
 	FILE* fp = fopen(obj->objFilename, "r");
-	char buff[200];
-	memset(buff, 0, sizeof(buff));
-	while (fgets(buff, sizeof(buff), fp) != NULL)
+	if ((obj->objFilename[0] != 0) && (fp != NULL))
 	{
-		//printf("%s",buff); 
-		if ((buff[0] == 'v') && (buff[1] == 't'))  // vector texture
+		char buff[200];
+		memset(buff, 0, sizeof(buff));
+		while (fgets(buff, sizeof(buff), fp) != NULL)
 		{
-			sscanf(&buff[3], "%f %f\n", &(obj->vt[obj->numVt].dat[0]), &(obj->vt[obj->numVt].dat[1]));
-			obj->numVt++;
+			//printf("%s",buff); 
+			if ((buff[0] == 'v') && (buff[1] == 't'))  // vector texture
+			{
+				sscanf(&buff[3], "%f %f\n", &(obj->vt[obj->numVt].dat[0]), &(obj->vt[obj->numVt].dat[1]));
+				obj->numVt++;
+			}
+			else if ((buff[0] == 'v') && (buff[1] == 'n'))  // vector normal
+			{
+				sscanf(&buff[3], "%f %f %f\n", &(obj->vn[obj->numVn].dat[0]), &(obj->vn[obj->numVn].dat[1]), &(obj->vn[obj->numVn].dat[2]));
+				obj->numVn++;
+			}
+			else if (buff[0] == 'v')  // vector 
+			{
+				sscanf(&buff[2], "%f %f %f\n", &(obj->v[obj->numV].dat[0]), &(obj->v[obj->numV].dat[1]), &(obj->v[obj->numV].dat[2]));
+				obj->numV++;
+			}
+			else if (buff[0] == 'f')
+			{
+				sscanf(&buff[2], "%d/%d/%d %d/%d/%d %d/%d/%d\n", &(obj->f[obj->numF].x), &(obj->f[obj->numF].z), &(obj->f[obj->numF].y), &(obj->f[obj->numF + 1].x), &(obj->f[obj->numF + 1].z), &(obj->f[obj->numF + 1].y), &(obj->f[obj->numF + 2].x), &(obj->f[obj->numF + 2].z), &(obj->f[obj->numF + 2].y));
+				obj->f[obj->numF].x--;
+				obj->f[obj->numF].y--;
+				obj->f[obj->numF].z--;
+				obj->f[obj->numF + 1].x--;
+				obj->f[obj->numF + 1].y--;
+				obj->f[obj->numF + 1].z--;
+				obj->f[obj->numF + 2].x--;
+				obj->f[obj->numF + 2].y--;
+				obj->f[obj->numF + 2].z--;
+				obj->numF += 3;
+			}
 		}
-		else if ((buff[0] == 'v') && (buff[1] == 'n'))  // vector normal
-		{
-			sscanf(&buff[3], "%f %f %f\n", &(obj->vn[obj->numVn].dat[0]), &(obj->vn[obj->numVn].dat[1]), &(obj->vn[obj->numVn].dat[2]));
-			obj->numVn++;
-		}
-		else if (buff[0] == 'v')  // vector 
-		{
-			sscanf(&buff[2], "%f %f %f\n", &(obj->v[obj->numV].dat[0]), &(obj->v[obj->numV].dat[1]), &(obj->v[obj->numV].dat[2]));
-			obj->numV++;
-		}
-		else if (buff[0] == 'f')
-		{
-			sscanf(&buff[2], "%d/%d/%d %d/%d/%d %d/%d/%d\n", &(obj->f[obj->numF].x), &(obj->f[obj->numF].z), &(obj->f[obj->numF].y), &(obj->f[obj->numF + 1].x), &(obj->f[obj->numF + 1].z), &(obj->f[obj->numF + 1].y), &(obj->f[obj->numF + 2].x), &(obj->f[obj->numF + 2].z), &(obj->f[obj->numF + 2].y));
-			obj->f[obj->numF].x--;
-			obj->f[obj->numF].y--;
-			obj->f[obj->numF].z--;
-			obj->f[obj->numF + 1].x--;
-			obj->f[obj->numF + 1].y--;
-			obj->f[obj->numF + 1].z--;
-			obj->f[obj->numF + 2].x--;
-			obj->f[obj->numF + 2].y--;
-			obj->f[obj->numF + 2].z--;
-			obj->numF += 3;
-		}
+		fclose(fp);
 	}
-
-	fclose(fp);
+	else
+	{
+		printf("Error file to load OBJ model was not found %s\n",obj->objFilename);
+	}
 }
 
 
@@ -458,19 +464,19 @@ void loadTexture(struct modelLoader* obj)
 	}
 	stbi_image_free(data);
 }
-void drawRobotArm(struct armControlParameter *obj)
+void drawRobotArm(struct armControlParameter* obj)
 {
 	int i = 0;
 	glPushMatrix();
- 
-	for(i=0; i < 4;i++)
+
+	for (i = 0; i < 4; i++)
 	{
 
 		glTranslatef(0.0, 0.0, 3.0);
 		drawModel(&aJointPart);
 		glRotatef((GLfloat)armParam.jointRadian[i][0], 1.0, 0.0, 0.0);
 		glRotatef((GLfloat)armParam.jointRadian[i][1], 0.0, 1.0, 0.0);
-		glRotatef((GLfloat)armParam.jointRadian[i][2], 0.0, 0.0, 1.0);	
+		glRotatef((GLfloat)armParam.jointRadian[i][2], 0.0, 0.0, 1.0);
 		glTranslatef(0.0, 0.0, 3.0);
 		drawModel(&aModelLoader);
 
@@ -485,14 +491,14 @@ void drawRobotArm(struct armControlParameter *obj)
 
 
 	glPushMatrix();
-	glTranslatef(-0.3, 2.0 - armParam.fingersWidth , 2.0);
+	glTranslatef(-0.3, 2.0 - armParam.fingersWidth, 2.0);
 	glRotatef((GLfloat)-185, 0.0, 1.0, 1.0);
 
 	drawModel(&aFinger);
 	glPopMatrix();
 	// Turn off wireframe mode
 
-	glTranslatef(-0.3, -2.0 + armParam.fingersWidth , 2.0);
+	glTranslatef(-0.3, -2.0 + armParam.fingersWidth, 2.0);
 	glRotatef((GLfloat)90, 1.0, 0.0, 0.0);
 	glRotatef((GLfloat)5.0, 0.0, 0.0, 1.0);
 	drawModel(&aFinger);
@@ -502,46 +508,46 @@ void drawRobotArm(struct armControlParameter *obj)
 
 }
 
-double cameraControl(int controlParameter,int controlParameter2)
+double cameraControl(int controlParameter, int controlParameter2)
 {
 	double ret = 0;
-	int i =0;
+	int i = 0;
 	static int isAutomave = 0;
 	static GLfloat u = 0.0;
 	static GLdouble eye[3];
-	static GLdouble center[3]; 
+	static GLdouble center[3];
 	static GLdouble up[3];
-//UPDATE_UP_X
-	// read parameter
-	if (inRange(UPDATE_EYE_Z,UPDATE_EYE_X,controlParameter) == 1)
+	//UPDATE_UP_X
+		// read parameter
+	if (inRange(UPDATE_EYE_Z, UPDATE_EYE_X, controlParameter) == 1)
 	{
 		i = controlParameter - UPDATE_EYE_X;
-		eye[i] = boundValue(100,-50,eye[i]+controlParameter2);	 
+		eye[i] = boundValue(100, -50, eye[i] + controlParameter2);
 		ret = eye[i];
 	}
-	else if (inRange(UPDATE_CENT_Z,UPDATE_CENT_X,controlParameter) == 1)
+	else if (inRange(UPDATE_CENT_Z, UPDATE_CENT_X, controlParameter) == 1)
 	{
 
 		i = controlParameter - UPDATE_CENT_X;
-		center[i] = boundValue(100,-50,center[i]+controlParameter2);
+		center[i] = boundValue(100, -50, center[i] + controlParameter2);
 		ret = center[i];
 	}
-	else if (inRange(UPDATE_UP_Z,UPDATE_UP_X,controlParameter) == 1)
+	else if (inRange(UPDATE_UP_Z, UPDATE_UP_X, controlParameter) == 1)
 	{
 
 		i = controlParameter - UPDATE_UP_X;
-		up[i] = boundValue(100,-50,up[i]+controlParameter2);
+		up[i] = boundValue(100, -50, up[i] + controlParameter2);
 		ret = up[i];
 	}
 	else if ((controlParameter == INITIAL_CAMERA) && (isAutomave == 0))
-	{	
+	{
 		glMatrixMode(GL_MODELVIEW);
 	}
-	else if(controlParameter == RESET_CAMERA_POS)
+	else if (controlParameter == RESET_CAMERA_POS)
 	{
 		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);
-		for(i = 0;i<3;i++)
+		for (i = 0; i < 3; i++)
 		{
 			center[0] = 0;
 			eye[i] = 0;
@@ -549,15 +555,15 @@ double cameraControl(int controlParameter,int controlParameter2)
 		}
 		u = 0;
 	}
-	else if(controlParameter == ENABLE_AUTOMOVE_CAMERA)
+	else if (controlParameter == ENABLE_AUTOMOVE_CAMERA)
 	{
 		isAutomave = 1;
 	}
-	else if(controlParameter == DISABLE_AUTOMOVE_CAMERA)
+	else if (controlParameter == DISABLE_AUTOMOVE_CAMERA)
 	{
 		isAutomave = 0;
 	}
-	else if(controlParameter == IS_AUTOMOVE_CAMERA)
+	else if (controlParameter == IS_AUTOMOVE_CAMERA)
 	{
 		ret = isAutomave;
 	}
@@ -572,11 +578,11 @@ double cameraControl(int controlParameter,int controlParameter2)
 
 	}
 	glLoadIdentity();
-	gluLookAt(10*cos(u)+eye[0],10*cos(u)+eye[1],eye[2]+40*cos(u/3)+2,center[0],center[1],center[2],cos(u)+up[0],up[1],up[2]);
+	gluLookAt(10 * cos(u) + eye[0], 10 * cos(u) + eye[1], eye[2] + 40 * cos(u / 3) + 2, center[0], center[1], center[2], cos(u) + up[0], up[1], up[2]);
 	glutPostRedisplay();
 	return ret;
 }
-double armControl(int controlParameter,int controlParameter2)
+double armControl(int controlParameter, int controlParameter2)
 {
 	double ret = 0.0;
 	int i = 0;
@@ -586,71 +592,71 @@ double armControl(int controlParameter,int controlParameter2)
 	static int isAutomave = 0;
 	//armParam
 
-    if ((controlParameter == INITIAL_CAMERA) && (isAutomave == 0))
-	{	
+	if ((controlParameter == INITIAL_CAMERA) && (isAutomave == 0))
+	{
 		//glMatrixMode(GL_MODELVIEW);
 	}
-	else if(controlParameter == ENABLE_AUTO_ARM_MOVE)
+	else if (controlParameter == ENABLE_AUTO_ARM_MOVE)
 	{
 		isAutomave = 1;
 	}
-	else if(controlParameter == DISABLE_AUTO_ARM_MOVE)
+	else if (controlParameter == DISABLE_AUTO_ARM_MOVE)
 	{
 		isAutomave = 0;
 	}
-	else if(controlParameter == IS_AUTOMOVE_ARM)
+	else if (controlParameter == IS_AUTOMOVE_ARM)
 	{
 		ret = isAutomave;
 	}
-	else if(controlParameter == WHICH_IS_CONTROL)
+	else if (controlParameter == WHICH_IS_CONTROL)
 	{
 		ret = whichPartIsControled;
 	}
-	else if(controlParameter == CHANGE_CONTROL_PART)
+	else if (controlParameter == CHANGE_CONTROL_PART)
 	{
 		whichPartIsControled = controlParameter2;
 	}
-	else if((controlParameter >= CONTROL_PARAM1) && (controlParameter <= CONTROL_PARAM3))
+	else if ((controlParameter >= CONTROL_PARAM1) && (controlParameter <= CONTROL_PARAM3))
 	{
-		if((whichPartIsControled >= CONTROL_JOINT1) && (whichPartIsControled <= CONTROL_JOINT5))
+		if ((whichPartIsControled >= CONTROL_JOINT1) && (whichPartIsControled <= CONTROL_JOINT5))
 		{
-			j = whichPartIsControled-CONTROL_JOINT1;
+			j = whichPartIsControled - CONTROL_JOINT1;
 			i = controlParameter - CONTROL_PARAM1;
-			armParam.jointRadian[j][i] =(float) (((int)armParam.jointRadian[j][i] +(int)controlParameter2)%360);
+			armParam.jointRadian[j][i] = (float)(((int)armParam.jointRadian[j][i] + (int)controlParameter2) % 360);
 		}
-		else if ((whichPartIsControled == CONTROL_FINGER) &&(controlParameter == CONTROL_PARAM1))
+		else if ((whichPartIsControled == CONTROL_FINGER) && (controlParameter == CONTROL_PARAM1))
 		{
-			armParam.fingersWidth = boundValue(1.2,0.0,armParam.fingersWidth+ controlParameter2/50.0);
+			armParam.fingersWidth = boundValue(1.2, 0.0, armParam.fingersWidth + controlParameter2 / 50.0);
 		}
 	}
 	else if (controlParameter == RESET_ARM_PARAM)
 	{
 		armParam.fingersWidth = 0.0;
-		for(i = 0;i <3 ;i++)
-			for(j=0;j<5;j++)
-				armParam.jointRadian[j][i] =0.0;
+		for (i = 0; i < 3; i++)
+			for (j = 0; j < 5; j++)
+				armParam.jointRadian[j][i] = 0.0;
 
 	}
-	if(isAutomave == 1)
+	if (isAutomave == 1)
 	{
 
-		armParam.fingersWidth = boundValue(1.2,0.0,armParam.fingersWidth-0.3+0.1*(rand()%7));
-		for(i = 0;i <3 ;i++)
-			for(j=0;j<5;j++)
+		armParam.fingersWidth = boundValue(1.2, 0.0, armParam.fingersWidth - 0.3 + 0.1 * (rand() % 7));
+		for (i = 0; i < 3; i++)
+			for (j = 0; j < 5; j++)
 			{
 				//k = rand()%2;
-				k = ((((i+j)%2)==0) - (((i+j)%2)!=0));
-				armParam.jointRadian[j][i] =(float) (((int)armParam.jointRadian[j][i] + k*(6 - (int)rand%12))%360);
+				k = ((((i + j) % 2) == 0) - (((i + j) % 2) != 0));
+				armParam.jointRadian[j][i] = (float)(((int)armParam.jointRadian[j][i] + k * (1 - (int)rand % 2)) % 360);
 			}
-	//		glutPostRedisplay();
+		//		glutPostRedisplay();
 	}
 
 	return ret;
 }
 
-void setColorLight(GLfloat *color)
+void setColorLight(GLfloat* color)
 {
-	GLfloat direction[] = { 1.0,1.0,1.0,0.0 }; 
+	GLfloat direction[] = { 1.0,1.0,1.0,0.0 };
 	glDisable(GL_LIGHT0);
 	glDisable(GL_LIGHTING);
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color);
@@ -663,20 +669,20 @@ void setColorLight(GLfloat *color)
 	glEnable(GL_LIGHT0);
 }
 
-int inRange(const double max,const double min,const double value)
+int inRange(const double max, const double min, const double value)
 {
 	int ret = 0;
-	if ((value <= max) && (value >=min))
+	if ((value <= max) && (value >= min))
 	{
 		ret = 1;
 	}
 	return ret;
 }
-double boundValue(const double max,const double min,const double original)
+double boundValue(const double max, const double min, const double original)
 {
-	double ret  =original;
-	if(original > max)ret = max;
-	if(original < min)ret = min;
+	double ret = original;
+	if (original > max)ret = max;
+	if (original < min)ret = min;
 	return ret;
 }
 
