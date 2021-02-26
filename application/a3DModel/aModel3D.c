@@ -40,11 +40,8 @@
 #define ENABLE_AUTO_ARM_MOVE -2
 #define IS_AUTOMOVE_ARM -3
 #define CONTROL_JOINT1 0
-#define CONTROL_JOINT2 1
-#define CONTROL_JOINT3 2
-#define CONTROL_JOINT4 3
-#define CONTROL_JOINT5 4
-#define NUM_ARM_JOINT 7
+
+#define NUM_ARM_JOINT 6
 #define CONTROL_FINGER NUM_ARM_JOINT
 
 #define CHANGE_CONTROL_PART 12
@@ -73,6 +70,12 @@
 #define CAMERA_TIMER_UPDATE 17
 #define SET_MODE_CAMERA 18
 #define GET_MODE_CAMERA 19
+
+
+// Change information page
+#define HOME_INFO 0
+#define ROBOT_SETTING_INFO 1
+#define CAMERA_SETTING_INFO 2
 
 struct vector3Df
 {
@@ -126,6 +129,7 @@ struct armControlParameter armParam;
 int enableWireFrame = 0;
 int enableCullBack = 0;
 int changeLight = 0;
+int pageStatus = HOME_INFO;
 
 #define white  { 1.0,1.0,1.0,1.0 }
 #define yellow  { 1.0,1.0,0.0,1.0 }
@@ -345,6 +349,19 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case '+':
 		signVal = 1;
+		break;
+		case '0':
+			if(pageStatus != CAMERA_SETTING_INFO)
+			pageStatus = CAMERA_SETTING_INFO;
+			else
+			pageStatus = HOME_INFO;
+		break;
+		case '9':
+			if(pageStatus != ROBOT_SETTING_INFO)
+			pageStatus = ROBOT_SETTING_INFO;
+			else
+			pageStatus = HOME_INFO;
+		break;
 	default:
 		break;
 	}
@@ -625,7 +642,6 @@ double cameraControl(int controlParameter, int controlParameter2)
 	{
 		i = controlParameter - UPDATE_EYE_X;
 		eye[i] = boundValue(100, -50, eye[i] + controlParameter2);
-		printf(" value : %f \n",(double)eye[i]);
 		ret = eye[i];
 	}
 	else if ((inRange(UPDATE_CENT_Z, UPDATE_CENT_X, controlParameter) == 1) && (isAbleToControl == CAMERA_CONTROL_MODE))
@@ -633,7 +649,6 @@ double cameraControl(int controlParameter, int controlParameter2)
 
 		i = controlParameter - UPDATE_CENT_X;
 		center[i] = boundValue(100, -50, center[i] + controlParameter2);
-		printf(" value : %f \n",(double)center[i]);
 		ret = center[i];
 	}
 	else if ((inRange(UPDATE_UP_Z, UPDATE_UP_X, controlParameter) == 1) && (isAbleToControl == CAMERA_CONTROL_MODE))
@@ -641,7 +656,6 @@ double cameraControl(int controlParameter, int controlParameter2)
 
 		i = controlParameter - UPDATE_UP_X;
 		up[i] = boundValue(100, -50, up[i] + controlParameter2);
-		printf(" value : %f \n",(double)up[i]);
 		ret = up[i];
 	}
 	else if ((controlParameter == INITIAL_CAMERA) && (isAutomave == 0))
@@ -801,6 +815,9 @@ double boundValue(const double max, const double min, const double original)
 }
 void displayInterfaceText()
 {
+		int i = 0;
+		char buff[200];
+		memset(buff,0,200);
 			  glPushAttrib(GL_ENABLE_BIT);
 		  glDisable(GL_DEPTH_TEST);
 		  glDisable(GL_LIGHTING);
@@ -813,15 +830,49 @@ void displayInterfaceText()
 		  glMatrixMode(GL_MODELVIEW);
 		  glPushMatrix();
 		  glLoadIdentity();
-		  output(80, 2800, "w : enter/leave control camera mode");
-		  output(80, 2650, "In Camera mode");
-		  output(80, 2500, "   a      : start/stop autopilot");
-		  output(80, 2350, "   r      : reset position");
-		  output(80, 2200, "   up/down:x eye parameter");
-		  output(80, 2050, "left/right:y eye parameter");
 
-		  output(80, 250, "and move the mouse horizontally");
-		  output(80, 100, "to change the light position.");
+		  if(pageStatus == HOME_INFO)
+		  {
+				output(80, 2800-(i++)*150, "q : Quit");
+				output(80, 2800-(i++)*150, "w : Enter/leave control camera mode");
+				output(80, 2800-(i++)*150, "   Show/hide Info");
+				output(80, 2800-(i++)*150, "e : Reset Robot arm's postion");
+				output(80, 2800-(i++)*150, "s : Robot arm autopilot/control mode");
+				output(80, 2800-(i++)*150, "i : Light setting");
+				sprintf(buff,"o : On/off face back culling (%s)",(enableCullBack==1)?"on":"off");
+				output(80, 2800-(i++)*150, buff);
+				output(80, 2800-(i++)*150, "p : On/off wire frame");
+				output(80, 2800-(i++)*150, "9 : Robot arm advanced setting info");
+				output(80, 2800-(i++)*150, "0 : Camera advanced setting info"); 	
+		  }
+		  else if (pageStatus == CAMERA_SETTING_INFO)
+		  {
+				output(80, 2800-(i++)*150, "0   : Main Info");
+				output(80, 2800-(i++)*150, "9   : Robot arm advanced setting info");
+				output(80, 2800-(i++)*150, "Up/down: Eye Y");
+				output(80, 2800-(i++)*150, "Left/right: Eye X");
+				output(80, 2800-(i++)*150, "-/+ : Increase/decrease parameters below");
+				output(80, 2800-(i++)*150, "f   : Center X");
+				output(80, 2800-(i++)*150, "g   : Center Y");
+				output(80, 2800-(i++)*150, "h   : Center Z");
+				output(80, 2800-(i++)*150, "j   : Eye Z");
+				output(80, 2800-(i++)*150, "t   : Up vector X");
+				output(80, 2800-(i++)*150, "y   : Up vector Y");
+				output(80, 2800-(i++)*150, "u   : Up vector Z");
+
+		  }
+		  else if (pageStatus == ROBOT_SETTING_INFO)
+		  {
+				output(80, 2800-(i++)*150, "9 : Main Info");
+				output(80, 2800-(i++)*150, "0 : Camera advanced setting info");
+				output(80, 2800-(i++)*150, "In robot munual control mode");
+				output(80, 2800-(i++)*150, "   z : Select the green arm to rotate");
+				output(80, 2800-(i++)*150, "       Shadow setting");
+				output(80, 2800-(i++)*150, " x/c :Rotate X-axis");
+				output(80, 2800-(i++)*150, " v/b :Rotate Y-axis");
+				output(80, 2800-(i++)*150, " n/m :Rotate Z-axis");
+				output(80, 2800-(i++)*150, " ,/. :Control fingers");
+		  }
 		  glPopMatrix();
 		  glMatrixMode(GL_PROJECTION);
 		  
