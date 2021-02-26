@@ -32,21 +32,26 @@
 #define FILENAME_SIZE 40
 
 // Robot control
-#define DISABLE_AUTO_ARM_MOVE 1
-#define ENABLE_AUTO_ARM_MOVE 2
-#define IS_AUTOMOVE_ARM 3
-#define CONTROL_JOINT1 5
-#define CONTROL_JOINT2 6
-#define CONTROL_JOINT3 7
-#define CONTROL_JOINT4 8
-#define CONTROL_JOINT5 9
-#define CONTROL_FINGER 10
-#define WHICH_IS_CONTROL 11
+
+#define ROBOT_TIMER_UPDATE -6
+#define RESET_ARM_PARAM -5
+#define WHICH_IS_CONTROL -4
+#define DISABLE_AUTO_ARM_MOVE -1
+#define ENABLE_AUTO_ARM_MOVE -2
+#define IS_AUTOMOVE_ARM -3
+#define CONTROL_JOINT1 0
+#define CONTROL_JOINT2 1
+#define CONTROL_JOINT3 2
+#define CONTROL_JOINT4 3
+#define CONTROL_JOINT5 4
+#define NUM_ARM_JOINT 7
+#define CONTROL_FINGER NUM_ARM_JOINT
+
 #define CHANGE_CONTROL_PART 12
-#define CONTROL_PARAM1 13
-#define CONTROL_PARAM2 14
-#define CONTROL_PARAM3 15
-#define RESET_ARM_PARAM 16
+#define CONTROL_PARAM1 0
+#define CONTROL_PARAM2 2
+#define CONTROL_PARAM3 3
+
 
 // Camera control
 #define DISABLE_AUTOMOVE_CAMERA 1
@@ -63,6 +68,11 @@
 #define UPDATE_UP_X 12
 #define UPDATE_UP_Y 13
 #define UPDATE_UP_Z 14
+#define NOT_CAMERA_CONTROL_MODE 15
+#define CAMERA_CONTROL_MODE 16
+#define CAMERA_TIMER_UPDATE 17
+#define SET_MODE_CAMERA 18
+#define GET_MODE_CAMERA 19
 
 struct vector3Df
 {
@@ -95,7 +105,7 @@ struct modelLoader
 };
 struct armControlParameter
 {
-	double jointRadian[5][3]; // x,y ,z
+	double jointRadian[NUM_ARM_JOINT+1][3]; // x,y ,z
 	double fingersWidth;
 };
 void constructorModelLoader(struct modelLoader* obj, const char* objFilename, const char* imgFile);
@@ -107,6 +117,7 @@ double armControl(int controlParameter, int controlParameter2);
 void drawRobotArm(struct armControlParameter* obj);
 double boundValue(const double max, const double min, const double original);
 int inRange(const double max, const double min, const double value);
+void displayInterfaceText();
 void setColorLight(GLfloat* color);
 struct modelLoader aModelLoader;
 struct modelLoader aJointPart;
@@ -121,15 +132,54 @@ int changeLight = 0;
 #define cyan  { 0.0,1.0,1.0,1.0 }
 #define red  {1.0,0.0,0.0,1.0}
 #define blue  {0.0,0.0,1.0,1.0}
-GLfloat colorSet[][4] = { white,yellow,cyan,red,blue };
+#define green {0.0,1.0,0.0,1.0}
+GLfloat colorSet[][4] = { white,yellow,cyan,red,blue,green};
 
 int signVal = 1;
+
+
+void
+output(GLfloat x, GLfloat y, char *format,...)
+{
+  va_list args;
+  char buffer[200], *p;
+
+  va_start(args, format);
+  vsprintf(buffer, format, args);
+  va_end(args);
+  glPushMatrix();
+  glTranslatef(x, y, 0);
+  for (p = buffer; *p; p++)
+    glutStrokeCharacter(GLUT_STROKE_ROMAN, *p);
+  glPopMatrix();
+}
+
 
 // Clears the window and draw the torus.
 void display()
 {
+
+		glClearColor(0.3, 0.3, 0.3, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+
+	if( cameraControl(GET_MODE_CAMERA,0) == NOT_CAMERA_CONTROL_MODE)
+	{
+		displayInterfaceText();
+	}
+	else
+	{
+	//	  glMatrixMode(GL_MODELVIEW);
+	//	  glPushMatrix();
+		//		  glMatrixMode(GL_PROJECTION);
+		 // glPushMatrix();
+		 // glLoadIdentity();
+
+	//	glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+		//glPopMatrix();
+		cameraControl(INITIAL_CAMERA, 0);
+	}
 	if (enableCullBack == 1)
 	{
 
@@ -148,29 +198,36 @@ void display()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	}
+
+	//  glMatrixMode(GL_MODELVIEW);
+	 // glLoadIdentity();
+	//glPushMatrix();
+	//glTranslatef(0,0,-31);
 	drawRobotArm(&armParam);
 
-	cameraControl(INITIAL_CAMERA, 0);
+	//glPopMatrix();
+
 	if (enableWireFrame == 1)
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
 	glFlush();
-
 	// Always check for errors
 	int err;
 	while ((err = glGetError()) != GL_NO_ERROR)
 		printf("display: %s\n", gluErrorString(err));
 
 	glutSwapBuffers();
+
+	//glLoadIdentity();
 }
 // Advances the orbiter and requests to draw the next frame.
 void timer(int v)
 {
 
-	cameraControl(0, 0);
-	armControl(0, 0);
+	cameraControl(CAMERA_TIMER_UPDATE, 0);
+	armControl(ROBOT_TIMER_UPDATE, 0);
 	glutPostRedisplay();
 	glutTimerFunc(1000 / 60.0, timer, v);
 }
@@ -197,6 +254,7 @@ void special(int key, int a, int b)
 
 void keyboard(unsigned char key, int x, int y)
 {
+	int temp = 0;
 	switch (key)
 	{
 	case 27:
@@ -207,10 +265,10 @@ void keyboard(unsigned char key, int x, int y)
 		cameraControl(DISABLE_AUTOMOVE_CAMERA + (((int)cameraControl(IS_AUTOMOVE_CAMERA, 0) + 1) % 2), 0);
 		break;
 	case 's':
-		armControl(DISABLE_AUTO_ARM_MOVE + (((int)armControl(IS_AUTOMOVE_ARM, 0) + 1) % 2), 0);
+		armControl(DISABLE_AUTO_ARM_MOVE - (((int)armControl(IS_AUTOMOVE_ARM, 0) + 1) % 2), 0);
 		break;
 	case 'z':
-		armControl(CHANGE_CONTROL_PART, 5 + ((int)armControl(WHICH_IS_CONTROL, 0) - 4) % 6);
+		armControl(CHANGE_CONTROL_PART,  ((int)armControl(WHICH_IS_CONTROL, 0)+1) % (NUM_ARM_JOINT));
 		break;
 	case 'x':
 		armControl(CONTROL_PARAM1, -5);
@@ -230,11 +288,26 @@ void keyboard(unsigned char key, int x, int y)
 	case 'm':
 		armControl(CONTROL_PARAM3, 5);
 		break;
+	case ',':
+		temp = (int)armControl(WHICH_IS_CONTROL,0);
+		armControl(CHANGE_CONTROL_PART,NUM_ARM_JOINT);
+		armControl(CONTROL_PARAM1, -5);
+		armControl(CHANGE_CONTROL_PART,temp);
+		break;
+	case '.':
+		temp = (int)armControl(WHICH_IS_CONTROL,0);
+		armControl(CHANGE_CONTROL_PART,NUM_ARM_JOINT);
+		armControl(CONTROL_PARAM1, 5);
+		armControl(CHANGE_CONTROL_PART,temp);
+		break;
 	case 'j':
 		cameraControl(UPDATE_EYE_Z, 5 * signVal);
 		break;
 	case 'e':
 		armControl(RESET_ARM_PARAM, 0);
+		break;
+		case 'w':
+		cameraControl(SET_MODE_CAMERA,NOT_CAMERA_CONTROL_MODE + ((1+ (int)cameraControl(GET_MODE_CAMERA,0)-NOT_CAMERA_CONTROL_MODE)%2));
 		break;
 	case 'r':
 		cameraControl(RESET_CAMERA_POS, 0);
@@ -284,14 +357,21 @@ void reshape(GLint w, GLint h)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(40.0, ((GLfloat)w) / ((GLfloat)h), 1.0, 150.0);
-	glMatrixMode(GL_MODELVIEW);
-	glEnable(GL_TEXTURE_2D);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	// set the same texture to the long robot's arm
-	loadTexture(&aModelLoader);
-	//loadTexture(&aJointPart);
-	//loadTexture(&aFinger);
+	
+/*
+	 GLfloat aspectRatio;
+ glViewport(0, 0, w, h);
+ glMatrixMode(GL_PROJECTION);
+ glLoadIdentity();
+ aspectRatio = (GLfloat) w / (GLfloat) h;
+ if (w <= h)
+ glOrtho(-100.0, 100.0, -100 / aspectRatio, 100.0 / aspectRatio, 1.0, -1.0);
+ else
+ glOrtho(-100.0 * aspectRatio, 100.0 * aspectRatio, -100.0, 100.0, 1.0, -1.0);
+ glMatrixMode(GL_MODELVIEW);
+ glLoadIdentity();
+ */
 
 }
 void init()
@@ -316,7 +396,13 @@ void init()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	cameraControl(SET_MODE_CAMERA,CAMERA_CONTROL_MODE);
+	cameraControl(RESET_CAMERA_POS, 0);
 	cameraControl(INITIAL_CAMERA, 0);
+	cameraControl(SET_MODE_CAMERA,NOT_CAMERA_CONTROL_MODE);
+
+
+
 	//loadObjToVBuffs(&aModelLoader);
 }
 
@@ -467,11 +553,17 @@ void loadTexture(struct modelLoader* obj)
 void drawRobotArm(struct armControlParameter* obj)
 {
 	int i = 0;
-	glPushMatrix();
 
-	for (i = 0; i < 4; i++)
+	glMatrixMode(GL_MODELVIEW);
+	glEnable(GL_TEXTURE_2D);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	// set the same texture to the long robot's arm
+	loadTexture(&aModelLoader);	glPushMatrix();
+
+	for (i = 0; i < NUM_ARM_JOINT; i++)
 	{
-
+		if((i == (int)armControl(WHICH_IS_CONTROL,0) && (armControl(IS_AUTOMOVE_ARM,0) == 0))) setColorLight(colorSet[5]);
+		else if((i-1) == (int)armControl(WHICH_IS_CONTROL,0)) setColorLight(colorSet[changeLight]);
 		glTranslatef(0.0, 0.0, 3.0);
 		drawModel(&aJointPart);
 		glRotatef((GLfloat)armParam.jointRadian[i][0], 1.0, 0.0, 0.0);
@@ -482,14 +574,12 @@ void drawRobotArm(struct armControlParameter* obj)
 
 	}
 
+	if(((int)armControl(WHICH_IS_CONTROL,0) == (NUM_ARM_JOINT-1) && (armControl(IS_AUTOMOVE_ARM,0) == 0))) setColorLight(colorSet[changeLight]);	
 	glTranslatef(0.0, 0.0, 3.0);
 	drawModel(&aJointPart);
-	glRotatef((GLfloat)armParam.jointRadian[4][0], 1.0, 0.0, 0.0);
-	glRotatef((GLfloat)armParam.jointRadian[4][1], 0.0, 1.0, 0.0);
-	glRotatef((GLfloat)armParam.jointRadian[4][2], 0.0, 0.0, 1.0);
-
-
-
+	glRotatef((GLfloat)armParam.jointRadian[NUM_ARM_JOINT][0], 1.0, 0.0, 0.0);
+	glRotatef((GLfloat)armParam.jointRadian[NUM_ARM_JOINT][1], 0.0, 1.0, 0.0);
+	glRotatef((GLfloat)armParam.jointRadian[NUM_ARM_JOINT][2], 0.0, 0.0, 1.0);
 	glPushMatrix();
 	glTranslatef(-0.3, 2.0 - armParam.fingersWidth, 2.0);
 	glRotatef((GLfloat)-185, 0.0, 1.0, 1.0);
@@ -505,6 +595,9 @@ void drawRobotArm(struct armControlParameter* obj)
 
 	glPopMatrix();
 
+  	glDisable(GL_TEXTURE_2D);
+
+
 
 }
 
@@ -513,37 +606,49 @@ double cameraControl(int controlParameter, int controlParameter2)
 	double ret = 0;
 	int i = 0;
 	static int isAutomave = 0;
+	static int isAbleToControl = NOT_CAMERA_CONTROL_MODE;
 	static GLfloat u = 0.0;
 	static GLdouble eye[3];
 	static GLdouble center[3];
 	static GLdouble up[3];
 	//UPDATE_UP_X
 		// read parameter
-	if (inRange(UPDATE_EYE_Z, UPDATE_EYE_X, controlParameter) == 1)
+	if(controlParameter == SET_MODE_CAMERA)
+	{
+		isAbleToControl = controlParameter2;
+	}
+	else if (controlParameter == GET_MODE_CAMERA)
+	{
+		ret = isAbleToControl;
+	}
+	else if ((inRange(UPDATE_EYE_Z, UPDATE_EYE_X, controlParameter) == 1) && (isAbleToControl == CAMERA_CONTROL_MODE))
 	{
 		i = controlParameter - UPDATE_EYE_X;
 		eye[i] = boundValue(100, -50, eye[i] + controlParameter2);
+		printf(" value : %f \n",(double)eye[i]);
 		ret = eye[i];
 	}
-	else if (inRange(UPDATE_CENT_Z, UPDATE_CENT_X, controlParameter) == 1)
+	else if ((inRange(UPDATE_CENT_Z, UPDATE_CENT_X, controlParameter) == 1) && (isAbleToControl == CAMERA_CONTROL_MODE))
 	{
 
 		i = controlParameter - UPDATE_CENT_X;
 		center[i] = boundValue(100, -50, center[i] + controlParameter2);
+		printf(" value : %f \n",(double)center[i]);
 		ret = center[i];
 	}
-	else if (inRange(UPDATE_UP_Z, UPDATE_UP_X, controlParameter) == 1)
+	else if ((inRange(UPDATE_UP_Z, UPDATE_UP_X, controlParameter) == 1) && (isAbleToControl == CAMERA_CONTROL_MODE))
 	{
 
 		i = controlParameter - UPDATE_UP_X;
 		up[i] = boundValue(100, -50, up[i] + controlParameter2);
+		printf(" value : %f \n",(double)up[i]);
 		ret = up[i];
 	}
 	else if ((controlParameter == INITIAL_CAMERA) && (isAutomave == 0))
 	{
 		glMatrixMode(GL_MODELVIEW);
 	}
-	else if (controlParameter == RESET_CAMERA_POS)
+	else if ((controlParameter == RESET_CAMERA_POS) && (isAbleToControl == CAMERA_CONTROL_MODE))
 	{
 		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);
@@ -553,13 +658,17 @@ double cameraControl(int controlParameter, int controlParameter2)
 			eye[i] = 0;
 			up[i] = 0;
 		}
+		center[2] = -1;
+		up[1] =1;
+//eye[2] = -10;
+			eye[2] = (NUM_ARM_JOINT+2)*5;
 		u = 0;
 	}
-	else if (controlParameter == ENABLE_AUTOMOVE_CAMERA)
+	else if ((controlParameter == ENABLE_AUTOMOVE_CAMERA) && (isAbleToControl == CAMERA_CONTROL_MODE))
 	{
 		isAutomave = 1;
 	}
-	else if (controlParameter == DISABLE_AUTOMOVE_CAMERA)
+	else if ((controlParameter == DISABLE_AUTOMOVE_CAMERA) && (isAbleToControl == CAMERA_CONTROL_MODE))
 	{
 		isAutomave = 0;
 	}
@@ -569,7 +678,7 @@ double cameraControl(int controlParameter, int controlParameter2)
 	}
 
 
-	if (isAutomave == 1)
+	if ((isAutomave == 1) && (isAbleToControl == CAMERA_CONTROL_MODE))
 	{
 		u += 0.01;
 	}
@@ -577,9 +686,13 @@ double cameraControl(int controlParameter, int controlParameter2)
 	{
 
 	}
-	glLoadIdentity();
-	gluLookAt(10 * cos(u) + eye[0], 10 * cos(u) + eye[1], eye[2] + 40 * cos(u / 3) + 2, center[0], center[1], center[2], cos(u) + up[0], up[1], up[2]);
-	glutPostRedisplay();
+	if ((isAbleToControl == CAMERA_CONTROL_MODE)|| (controlParameter == INITIAL_CAMERA))
+	{
+		glLoadIdentity();
+		gluLookAt(10 * cos(u) + eye[0], 10 * cos(u) + eye[1], eye[2] + 40 * cos(u / 3) + 2, center[0], center[1], center[2], cos(u) + up[0], up[1], up[2]);
+		glutPostRedisplay();	
+	}
+
 	return ret;
 }
 double armControl(int controlParameter, int controlParameter2)
@@ -612,13 +725,13 @@ double armControl(int controlParameter, int controlParameter2)
 	{
 		ret = whichPartIsControled;
 	}
-	else if (controlParameter == CHANGE_CONTROL_PART)
+	else if ((controlParameter == CHANGE_CONTROL_PART) && (isAutomave == 0))
 	{
 		whichPartIsControled = controlParameter2;
 	}
-	else if ((controlParameter >= CONTROL_PARAM1) && (controlParameter <= CONTROL_PARAM3))
+	else if ((controlParameter >= CONTROL_PARAM1) && (controlParameter <= CONTROL_PARAM3) && (isAutomave == 0))
 	{
-		if ((whichPartIsControled >= CONTROL_JOINT1) && (whichPartIsControled <= CONTROL_JOINT5))
+		if ((whichPartIsControled >= CONTROL_JOINT1) && (whichPartIsControled <= (NUM_ARM_JOINT-1)))
 		{
 			j = whichPartIsControled - CONTROL_JOINT1;
 			i = controlParameter - CONTROL_PARAM1;
@@ -631,18 +744,19 @@ double armControl(int controlParameter, int controlParameter2)
 	}
 	else if (controlParameter == RESET_ARM_PARAM)
 	{
+		whichPartIsControled = CONTROL_JOINT1;
 		armParam.fingersWidth = 0.0;
 		for (i = 0; i < 3; i++)
-			for (j = 0; j < 5; j++)
+			for (j = 0; j < (NUM_ARM_JOINT+1); j++)
 				armParam.jointRadian[j][i] = 0.0;
 
 	}
-	if (isAutomave == 1)
+	if ((isAutomave == 1) && (controlParameter == ROBOT_TIMER_UPDATE))
 	{
 
 		armParam.fingersWidth = boundValue(1.2, 0.0, armParam.fingersWidth - 0.3 + 0.1 * (rand() % 7));
 		for (i = 0; i < 3; i++)
-			for (j = 0; j < 5; j++)
+			for (j = 0; j < (NUM_ARM_JOINT+1); j++)
 			{
 				//k = rand()%2;
 				k = ((((i + j) % 2) == 0) - (((i + j) % 2) != 0));
@@ -685,4 +799,33 @@ double boundValue(const double max, const double min, const double original)
 	if (original < min)ret = min;
 	return ret;
 }
+void displayInterfaceText()
+{
+			  glPushAttrib(GL_ENABLE_BIT);
+		  glDisable(GL_DEPTH_TEST);
+		  glDisable(GL_LIGHTING);
+		  
+		  glMatrixMode(GL_PROJECTION);
+		  glPushMatrix();
+		  glLoadIdentity();
+		  gluOrtho2D(0, 3000, 0, 3000);
 
+		  glMatrixMode(GL_MODELVIEW);
+		  glPushMatrix();
+		  glLoadIdentity();
+		  output(80, 2800, "w : enter/leave control camera mode");
+		  output(80, 2650, "In Camera mode");
+		  output(80, 2500, "   a      : start/stop autopilot");
+		  output(80, 2350, "   r      : reset position");
+		  output(80, 2200, "   up/down:x eye parameter");
+		  output(80, 2050, "left/right:y eye parameter");
+
+		  output(80, 250, "and move the mouse horizontally");
+		  output(80, 100, "to change the light position.");
+		  glPopMatrix();
+		  glMatrixMode(GL_PROJECTION);
+		  
+		  glPopMatrix();
+
+		  glPopAttrib();
+}
