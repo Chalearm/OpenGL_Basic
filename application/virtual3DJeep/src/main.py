@@ -5,7 +5,7 @@ from OpenGL.GLU import *
 import math, time, random, csv, datetime
 import ImportObject
 import PIL.Image as Image
-import jeep, cone
+import jeep, cone, lightSetting
 
 windowSize = 600
 helpWindow = False
@@ -70,6 +70,8 @@ ckSense = 5.0
 #concerned with lighting#########################!!!!!!!!!!!!!!!!##########
 applyLighting = False
 
+abcd = False
+
 fov = 30.0
 attenuation = 1.0
 
@@ -83,8 +85,15 @@ matAmbient = [1.0, 1.0, 1.0, 1.0]
 matDiffuse = [0.5, 0.5, 0.5, 1.0]
 matSpecular = [0.5, 0.5, 0.5, 1.0]
 matShininess  = 100.0
+ 
+#mouse control direction variable
+mvx = 0.0
+mvy = 0.0
+mvz = 0.0
+oldy = 0.0
+oldx = 0.0
 
-
+lightSet = lightSetting.lightSetting()
 
 #--------------------------------------developing scene---------------
 class Scene:
@@ -144,46 +153,14 @@ def display():
     global jeepObj, canStart, score, beginTime, countTime
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    if (applyLighting == True):
-        glPushMatrix()
-        glLoadIdentity()
-        gluLookAt(0.0, 3.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+    # position viewpoint based on mouse rotation and keyboard  translation 
+    glLoadIdentity()
+    #mouse control direction
 
-        glLightfv(GL_LIGHT0, GL_POSITION, light0_Position)
-        pointPosition = [0.0,-10.0,0.0]
-
-        glDisable(GL_LIGHTING)
-
-        glColor3f(light0_Intensity[0], light0_Intensity[1], light0_Intensity[2])
-
-        glTranslatef(light0_Position[0], light0_Position[1], light0_Position[2])
-
-        glutSolidSphere(0.025, 36, 24)
-
-        glTranslatef(-light0_Position[0], -light0_Position[1], -light0_Position[2])
-        glEnable(GL_LIGHTING)
-        glMaterialfv(GL_FRONT, GL_AMBIENT, matAmbient)
-        for x in range(1,4):
-            for z in range(1,4):
-                 matDiffuse = [float(x) * 0.3, float(x) * 0.3, float(x) * 0.3, 1.0] 
-                 matSpecular = [float(z) * 0.3, float(z) * 0.3, float(z) * 0.3, 1.0]  
-                 matShininess = float(z * z) * 10.0
-                 ## Set the material diffuse values for the polygon front faces. 
-                 glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuse)
-
-                 ## Set the material specular values for the polygon front faces. 
-                 glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular)
-
-                 ## Set the material shininess value for the polygon front faces. 
-                 glMaterialfv(GL_FRONT, GL_SHININESS, matShininess)
-
-                 ## Draw a glut solid sphere with inputs radius, slices, and stacks
-                 glutSolidSphere(0.25, 72, 64)
-                 glTranslatef(1.0, 0.0, 0.0)
-
-            glTranslatef(-3.0, 0.0, 1.0)
-        glPopMatrix()
-   
+    glRotatef(mvx, 1.0, 0.0, 0.0)
+    glRotatef(mvy, 0.0, 1.0, 0.0)
+    glRotatef(mvz, 0.0, 0.0, 1.0)
+    lightSet.lightUpdate()
     beginTime = 6-score
     countTime = score-6
     if (score <= 5):
@@ -208,10 +185,12 @@ def display():
     # if (usedDiamond == False):
     #     diamondObj.draw()
     
+    glScalef(mvy/500.0, mvy/500.0, mvy/500.0);
     jeepObj.draw()
     jeepObj.drawW1()
     jeepObj.drawW2()
     jeepObj.drawLight()
+    #glEnable(GL_LIGHTING)
     #personObj.draw()
     glutSwapBuffers()
 
@@ -287,11 +266,11 @@ def mouseWheel(button, dir, x, y):
     if (dir > 0): #zoom in
         radius -= 1
         #setView()
-        print "zoom in!"
+       # print "zoom in!"
     elif (dir < 0): #zoom out
         radius += 1
         #setView()
-        print "zoom out!"
+     #   print "zoom out!"
     eyeX = radius * math.sin(angle)
     eyeZ = radius * math.cos(angle)
     if centered == False:
@@ -537,8 +516,20 @@ def initializeLight():
     glEnable(GL_LIGHTING)                
     glEnable(GL_LIGHT0)                 
     glEnable(GL_DEPTH_TEST)              
-    glEnable(GL_NORMALIZE)               
+    glEnable(GL_NORMALIZE)     
+
+  #  glShadeModel(GL_SMOOTH)
+  #  glEnable(GL_CULL_FACE)          
     glClearColor(0.1, 0.1, 0.1, 0.0)
+
+
+def passivemotion(x,y):
+    global mvx, mvy, oldy, oldx
+    mvx +=  y - oldy;
+    mvy +=  x - oldx;
+    oldy = y
+    oldx = x
+    glutPostRedisplay()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~the finale!!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def main():
@@ -564,12 +555,13 @@ def main():
     glutMouseFunc(mouseHandle)
     glutMotionFunc(motionHandle)
     glutMouseWheelFunc(mouseWheel)
+    glutPassiveMotionFunc(passivemotion)
     glutSpecialFunc(specialKeys)
     glutKeyboardFunc(myKeyboard)
     glutReshapeFunc(noReshape)
     # things to do
     # add a menu 
-
+    lightSet.createMenu()
     loadSceneTextures()
 
     jeep1Obj.makeDisplayLists()
