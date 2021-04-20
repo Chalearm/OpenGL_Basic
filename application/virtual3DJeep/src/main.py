@@ -5,9 +5,10 @@ from OpenGL.GLU import *
 import math, time, random, csv, datetime
 import ImportObject
 import PIL.Image as Image
-import jeep, cone, lightSetting
+import jeep, cone, lightSetting, bird
 
 windowSize = 600
+aspectRatio = 1.0
 helpWindow = False
 helpWin = 0
 mainWin = 0
@@ -92,7 +93,7 @@ mvy = 0.0
 mvz = 0.0
 oldy = 0.0
 oldx = 0.0
-
+Abird = bird.bird(10,20)
 lightSet = lightSetting.lightSetting()
 
 #--------------------------------------developing scene---------------
@@ -146,7 +147,7 @@ class Scene:
 def staticObjects():
     global objectArray
     objectArray.append(Scene())
-    print "scene appended"
+    print ("scene appended")
 
 
 def display():
@@ -156,7 +157,6 @@ def display():
     # position viewpoint based on mouse rotation and keyboard  translation 
     glLoadIdentity()
     #mouse control direction
-
     glRotatef(mvx, 1.0, 0.0, 0.0)
     glRotatef(mvy, 0.0, 1.0, 0.0)
     glRotatef(mvz, 0.0, 0.0, 1.0)
@@ -185,11 +185,12 @@ def display():
     # if (usedDiamond == False):
     #     diamondObj.draw()
     
-    glScalef(mvy/500.0, mvy/500.0, mvy/500.0);
+    glScalef(mvy/200.0, mvy/200.0, mvy/200.0);
     jeepObj.draw()
     jeepObj.drawW1()
     jeepObj.drawW2()
     jeepObj.drawLight()
+    Abird.draw()
     #glEnable(GL_LIGHTING)
     #personObj.draw()
     glutSwapBuffers()
@@ -232,7 +233,7 @@ def mouseHandle(button, state, x, y):
     global midDown
     if (button == GLUT_MIDDLE_BUTTON and state == GLUT_DOWN):
         midDown = True
-        print "getting pushed"
+        print ("getting pushed")
     else:
         midDown = False    
         
@@ -287,7 +288,7 @@ def specialKeys(keypress, mX, mY):
 def myKeyboard(key, mX, mY):
     global eyeX, eyeY, eyeZ, angle, radius, helpWindow, centered, helpWin, overReason, topView, behindView
     if key == "h":
-        print "h pushed " + str(helpWindow)
+        print ("h pushed " + str(helpWindow))
         winNum = glutGetWindow()
         if helpWindow == False:
             helpWindow = True
@@ -300,12 +301,12 @@ def myKeyboard(key, mX, mY):
             glutMainLoop()
         elif helpWindow == True and winNum!=1:
             helpWindow = False
-            print glutGetWindow()
+            print (glutGetWindow())
             glutHideWindow()
             glutMainLoop()
 
     if key == "r":
-        print eyeX, eyeY, eyeZ, angle, radius
+        print (eyeX, eyeY, eyeZ, angle, radius)
         eyeX = 0.0
         eyeY = 2.0
         eyeZ = 10.0
@@ -316,7 +317,7 @@ def myKeyboard(key, mX, mY):
         elif centered == True:
             setObjView()
     elif key == "h":
-        print "h pushed " + str(helpWindow)
+        print ("h pushed " + str(helpWindow))
         winNum = glutGetWindow()
         if helpWindow == False:
             helpWindow = True
@@ -329,12 +330,12 @@ def myKeyboard(key, mX, mY):
             glutMainLoop()
         elif helpWindow == True and winNum!=1:
             helpWindow = False
-            print glutGetWindow()
+            print (glutGetWindow())
             glutHideWindow()
             #glutDestroyWindow(helpWin)
             glutMainLoop()
     elif key == "l":
-        print "light triggered!"
+        print ("light triggered!")
         if jeepObj.lightOn == True:
             jeepObj.lightOn = False
         elif jeepObj.lightOn == False:
@@ -343,10 +344,10 @@ def myKeyboard(key, mX, mY):
     elif key == "c":
         if centered == True:
             centered = False
-            print "non-centered view"
+            print ("non-centered view")
         elif centered == False:
             centered = True
-            print "centered view"
+            print ("centered view")
     elif key == "t":#top view, like a map ####################!!!!!!
         if (topView == True):
             topView = False
@@ -387,6 +388,18 @@ def dist(pt1, pt2):
 def noReshape(newX, newY): #used to ensure program works correctly when resized
     glutReshapeWindow(windowSize,windowSize)
 
+def myReshape(newX, newY): #used to ensure program works correctly when resized
+    glViewport(0, 0, newX, newY)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity();
+    aspectRatio = newX / newY
+    if (newX <= newY):
+        glOrtho(-100.0, 100.0, -100 / aspectRatio, 100.0 / aspectRatio, 1.0, -1.0)
+    else:
+        glOrtho(-100.0 * aspectRatio, 100.0 * aspectRatio, -100.0, 100.0, 1.0, -1.0)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+
 #--------------------------------------------making game more complex--------
 def addCone(x,z):
     allcones.append(cone.cone(x,z))
@@ -403,12 +416,12 @@ def collisionCheck():
         gameOver()
     for reward in rewardCoord:
         if dist((jeepObj.posX, jeepObj.posZ), reward) <= ckSense:
-            print "Star bonus!"
+            print ("Star bonus!")
             allstars.pop(rewardCoord.index(reward))
             rewardCoord.remove(reward)
             countTime -= 10
     if (dist((jeepObj.posX, jeepObj.posZ), (diamondObj.posX, diamondObj.posZ)) <= ckSense and usedDiamond ==False):
-        print "Diamond bonus!"
+        print ("Diamond bonus!")
         countTime /= 2
         usedDiamond = True
     if (jeepObj.posZ >= land*gameEnlarge):
@@ -420,13 +433,13 @@ def recordGame():
         spamwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
         ts = time.time()
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-        print st
+        print (st)
         spamwriter.writerow([st] + [finalScore])
     
 #-------------------------------------developing additional windows/options----
 def gameOver():
     global finalScore
-    print "Game completed!"
+    print ("Game completed!")
     finalScore = score-6
     #recordGame() #add to excel
     glutHideWindow()
@@ -439,7 +452,7 @@ def gameOver():
     
 def gameSuccess():
     global finalScore
-    print "Game success!"
+    print ("Game success!")
     finalScore = score-6
     #recordGame() #add to excel
     glutHideWindow()
@@ -490,9 +503,9 @@ def loadTexture(imageName):
         imgX = texturedImage.size[0]
         imgY = texturedImage.size[1]
         img = texturedImage.tobytes("raw","RGBX",0,-1)#tostring("raw", "RGBX", 0, -1)
-    except Exception, e:
-        print "Error:", e
-        print "Switching to RGBA mode."
+    except (Exception, e):
+        print ("Error:", e)
+        print ("Switching to RGBA mode.")
         imgX = texturedImage.size[0]
         imgY = texturedImage.size[1]
         img = texturedImage.tobytes("raw","RGB",0,-1)#tostring("raw", "RGBA", 0, -1)
@@ -558,15 +571,18 @@ def main():
     glutPassiveMotionFunc(passivemotion)
     glutSpecialFunc(specialKeys)
     glutKeyboardFunc(myKeyboard)
-    glutReshapeFunc(noReshape)
+    glutReshapeFunc(myReshape)
     # things to do
     # add a menu 
     lightSet.createMenu()
     loadSceneTextures()
 
+
+    Abird.getTextureID(loadTexture("../img/bird.jpg"))
     jeep1Obj.makeDisplayLists()
     jeep2Obj.makeDisplayLists()
     jeep3Obj.makeDisplayLists()
+    Abird.makeDisplayLists()
     #personObj.makeDisplayLists()
 
     # things to do

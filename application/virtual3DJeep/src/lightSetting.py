@@ -5,7 +5,8 @@ from OpenGL.GLU import *
 #------------------------------ light setting---------------------
 #2) Add pop-up menu to switch between different light properties (ambient,
 #diffuse, specular and position, point lights, directional lights, spotlights).
-AMBIENT_ON,AMBIENT_OFF,DIFFUSE_ON,DIFFUSE_OFF,SPEC_ON,SPEC_OFF,POS_ON,POS_OFF,POINT_ON,POINT_OFF,DIREC_ON,DIREC_OFF,SPOT_ON,SPOT_OFF = range(14)
+AMBIENT_ON,AMBIENT_OFF,DIFFUSE_ON,DIFFUSE_OFF,SPEC_ON,SPEC_OFF,POS_ON,POS_OFF,POINT_ON,POINT_OFF,DIREC_ON,DIREC_OFF,SPOT_ON,SPOT_OFF,SCREEN = range(15)
+FULL_SCREEN,SCREEN600X600 = range(2)
 class lightSetting:
     isEnableAmbient = False
     isEnableDiffuse = False
@@ -163,6 +164,15 @@ class lightSetting:
         self.isEnableSpotLights = False
         glutPostRedisplay()
 
+    def screenSetting(self,item):
+
+        if(item == 0):
+            glutReshapeWindow(glutGet(GLUT_SCREEN_WIDTH) , glutGet(GLUT_SCREEN_HEIGHT))
+        elif(item == 1):
+            glutReshapeWindow(600 , 600)
+
+        return 0
+
     menudict ={AMBIENT_ON : ambientOn,
                AMBIENT_OFF : ambientOff,
                DIFFUSE_ON : diffuseOn,
@@ -183,6 +193,11 @@ class lightSetting:
         return 0
 
     def createMenu(self):
+
+        screenM = glutCreateMenu(self.screenSetting)
+        glutAddMenuEntry("Full screen", FULL_SCREEN)
+        glutAddMenuEntry("600x600", SCREEN600X600)
+
         glutCreateMenu(self.dmenu)
         glutAddMenuEntry("Ambient on", AMBIENT_ON)
         glutAddMenuEntry("Diffuse on", DIFFUSE_ON)
@@ -191,5 +206,10 @@ class lightSetting:
         glutAddMenuEntry("Point on", POINT_ON)
         glutAddMenuEntry("direction on", DIREC_ON)
         glutAddMenuEntry("Spotlight on", SPOT_ON)
+        glutAddSubMenu("Screen ", screenM)
         glutAttachMenu(GLUT_RIGHT_BUTTON)
+
+
+
+
 
