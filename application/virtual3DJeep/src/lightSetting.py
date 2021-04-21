@@ -15,6 +15,7 @@ class lightSetting:
     isEnablePoint = False
     isEnableDirectLight = False
     isEnableSpotLights = False
+    spin = 0.0
 
     def resetLight(self):
         lightZeroColor = [0.0,0.0,0.0,1.0]
@@ -26,14 +27,21 @@ class lightSetting:
       #  glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, lightZeroPosition)
        # glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 0.0)
         
-        glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, lightZeroColor)
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, lightZeroColor)
-        glMaterialfv(GL_FRONT, GL_AMBIENT, lightZeroColor)
+      #  glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, lightZeroColor)
+      #  glMaterialfv(GL_FRONT, GL_DIFFUSE, lightZeroColor)
+      #  glMaterialfv(GL_FRONT, GL_AMBIENT, lightZeroColor)
 
       #  glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.0)
      #   glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.0)
      #   glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 5.0)
 
+    def changeLightDirection(self):
+        if (self.isEnableDirectLight == True):
+            self.spin += 30.0
+            if (self.spin > 360.0):
+                self.spin =0
+            self.lightUpdate()
+            glutPostRedisplay()
 
     def lightUpdate(self):
         lightPos = [10.0,1.0,0.0,1.0]
@@ -53,6 +61,9 @@ class lightSetting:
         glDisable(GL_LIGHTING)
         if (isEnableLight == True):
             self.resetLight()
+        if (self.isEnableDirectLight == True):
+            glRotated(self.spin,1.0,0.0,0.0)
+            glRotated(self.spin,0.0,1.0,0.0)
 
         if(self.isEnableAmbient == True):
          #   glMaterialfv(GL_FRONT, GL_AMBIENT, lightMagentaColor)
@@ -142,7 +153,7 @@ class lightSetting:
         self.isEnablePoint = False   
         glutPostRedisplay() 
 
-    def directionOn():
+    def directionOn(self):
         glutChangeToMenuEntry(6, "direction off", DIREC_OFF)
         self.isEnableDirectLight = True
         glutPostRedisplay()

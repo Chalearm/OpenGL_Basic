@@ -21,6 +21,7 @@ finalScore = 0
 canStart = False
 overReason = ""
 
+time300msRef = 0
 #for wheel spinning
 tickTime = 0
 
@@ -197,10 +198,15 @@ def display():
 
 def idle():#--------------with more complex display items like turning wheel---
     global tickTime, prevTime, score
+    global time300msRef
     jeepObj.rotateWheel(-0.1 * tickTime)    
     glutPostRedisplay()
-    
+
     curTime = glutGet(GLUT_ELAPSED_TIME)
+    if (curTime -time300msRef > 300):
+        time300msRef = curTime
+        lightSet.changeLightDirection()
+
     tickTime =  curTime - prevTime
     prevTime = curTime
     score = curTime/1000
@@ -342,6 +348,7 @@ def myKeyboard(key, mX, mY):
             jeepObj.lightOn = True
         glutPostRedisplay()
     elif key == "c":
+       # jeepObj.wheelDir = 'fwd'
         if centered == True:
             centered = False
             print ("non-centered view")
@@ -493,7 +500,8 @@ def showHelp():
     glColor3f(1.0,0.0,0.0)
     drawTextBitmap("Help Guide" , -0.2, 0.85)
     glColor3f(0.0,0.0,1.0)
-    drawTextBitmap("describe your control strategy." , -1.0, 0.7)
+    drawTextBitmap("The control of Jeep" , -1.0, 0.7)
+    drawTextBitmap("Right click for light and screen setting" , -1.0, 1.4)
     glutSwapBuffers()
 
 #----------------------------------------------texture development-----------
