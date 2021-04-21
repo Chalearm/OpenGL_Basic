@@ -40,6 +40,8 @@ class jeep:
     sizeZ = 1.0
 
     rotation = 0.0
+    animatedState = 0 # 0 - 5
+    lastAngle = 0.0
     
     def __init__(self, color):
         if (color == 'p'):
@@ -160,8 +162,35 @@ class jeep:
 ##            self.wheel1LocX += val * math.sin(math.radians(self.rotation))
 ##            self.wheel2LocZ += val * math.cos(math.radians(self.rotation))
 ##            self.wheel2LocX += val * math.sin(math.radians(self.rotation))
+
+           # print(self.posZ,self.posX)
         elif rot == True: 
             self.rotation+= val
+    def animate(self):
+        if(self.animatedState == 0):
+            if (self.posZ < 106.0):
+                self.move(False,0.5)
+            else:
+                self.animatedState = 1
+                self.lastAngle = self.rotation
+        elif (self.animatedState == 1): # rotate
+            if (self.rotation - self.lastAngle < 180.0):
+                self.move(True,10)
+            else:
+                self.animatedState = 2
+        elif (self.animatedState == 2):
+            if (self.posZ > 0.0):
+                self.move(False,0.5)
+            else:
+                self.animatedState = 3
+                self.lastAngle = self.rotation
+        elif (self.animatedState == 3): # rotate
+            if (self.rotation - self.lastAngle < 180.0):
+                self.move(True,10)
+            else:
+                self.animatedState = 0
+
+
 
 
         

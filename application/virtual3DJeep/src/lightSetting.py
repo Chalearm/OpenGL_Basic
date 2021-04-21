@@ -5,14 +5,13 @@ from OpenGL.GLU import *
 #------------------------------ light setting---------------------
 #2) Add pop-up menu to switch between different light properties (ambient,
 #diffuse, specular and position, point lights, directional lights, spotlights).
-AMBIENT_ON,AMBIENT_OFF,DIFFUSE_ON,DIFFUSE_OFF,SPEC_ON,SPEC_OFF,POS_ON,POS_OFF,POINT_ON,POINT_OFF,DIREC_ON,DIREC_OFF,SPOT_ON,SPOT_OFF,SCREEN = range(15)
+AMBIENT_ON,AMBIENT_OFF,DIFFUSE_ON,DIFFUSE_OFF,SPEC_ON,SPEC_OFF,POS_ON,POS_OFF,DIREC_ON,DIREC_OFF,SPOT_ON,SPOT_OFF,SCREEN = range(13)
 FULL_SCREEN,SCREEN600X600 = range(2)
 class lightSetting:
     isEnableAmbient = False
     isEnableDiffuse = False
     isEnableSpecular = False
     isEnablePosition = False
-    isEnablePoint = False
     isEnableDirectLight = False
     isEnableSpotLights = False
     spin = 0.0
@@ -24,23 +23,12 @@ class lightSetting:
         glLightfv(GL_LIGHT0, GL_DIFFUSE, lightZeroColor)
         glLightfv(GL_LIGHT0, GL_AMBIENT, lightZeroColor)
         glLightfv(GL_LIGHT0, GL_POSITION, lightZeroPosition)
-      #  glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, lightZeroPosition)
-       # glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 0.0)
-        
-      #  glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, lightZeroColor)
-      #  glMaterialfv(GL_FRONT, GL_DIFFUSE, lightZeroColor)
-      #  glMaterialfv(GL_FRONT, GL_AMBIENT, lightZeroColor)
-
-      #  glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.0)
-     #   glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.0)
-     #   glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 5.0)
 
     def changeLightDirection(self):
         if (self.isEnableDirectLight == True):
             self.spin += 30.0
             if (self.spin > 360.0):
                 self.spin =0
-            self.lightUpdate()
             glutPostRedisplay()
 
     def lightUpdate(self):
@@ -54,7 +42,7 @@ class lightSetting:
         light1_diffuse = [ 1.0, 1.0, 1.0, 1.0 ]
         light1_specular = [1.0, 1.0, 1.0, 1.0]
         light1_position = [-2.0, 2.0, 1.0, 1.0]
-        isEnableLight = ((self.isEnableAmbient == True) or (self.isEnableDiffuse == True) or (self.isEnableSpecular == True) or (self.isEnablePosition == True) or (self.isEnablePoint == True) or (self.isEnableDirectLight == True) or(self.isEnableSpotLights == True))
+        isEnableLight = ((self.isEnableAmbient == True) or (self.isEnableDiffuse == True) or (self.isEnableSpecular == True) or (self.isEnablePosition == True) or (self.isEnableDirectLight == True) or(self.isEnableSpotLights == True))
         glPushMatrix()
         glLoadIdentity()
         glDisable(GL_LIGHT0)
@@ -142,17 +130,6 @@ class lightSetting:
         self.isEnablePosition = False
         glutPostRedisplay()
 
-    def pointOn(self):
-        glutChangeToMenuEntry(5, "Point off", POINT_OFF)
-        self.isEnablePoint = True
-        glutPostRedisplay()
-
-
-    def pointOff(self):
-        glutChangeToMenuEntry(5, "Point on", POINT_ON)
-        self.isEnablePoint = False   
-        glutPostRedisplay() 
-
     def directionOn(self):
         glutChangeToMenuEntry(6, "direction off", DIREC_OFF)
         self.isEnableDirectLight = True
@@ -192,8 +169,6 @@ class lightSetting:
                SPEC_OFF : specularOff,
                POS_ON : positionOn,
                POS_OFF : positionOff,
-               POINT_ON : pointOn,
-               POINT_OFF : pointOff,
                DIREC_ON : directionOn,
                DIREC_OFF : directionOff,
                SPOT_ON : spotLightOn,
@@ -214,7 +189,6 @@ class lightSetting:
         glutAddMenuEntry("Diffuse on", DIFFUSE_ON)
         glutAddMenuEntry("Specular on", SPEC_ON)
         glutAddMenuEntry("Position on", POS_ON)
-        glutAddMenuEntry("Point on", POINT_ON)
         glutAddMenuEntry("direction on", DIREC_ON)
         glutAddMenuEntry("Spotlight on", SPOT_ON)
         glutAddSubMenu("Screen ", screenM)

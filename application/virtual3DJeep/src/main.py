@@ -21,7 +21,9 @@ finalScore = 0
 canStart = False
 overReason = ""
 
-time300msRef = 0
+isAnimated = False
+timeRef = 0
+timeUp = 50
 #for wheel spinning
 tickTime = 0
 
@@ -94,7 +96,7 @@ mvy = 0.0
 mvz = 0.0
 oldy = 0.0
 oldx = 0.0
-Abird = bird.bird(10,20)
+Abird = bird.bird(-10,-10)
 lightSet = lightSetting.lightSetting()
 
 #--------------------------------------developing scene---------------
@@ -130,16 +132,16 @@ class Scene:
         glBegin(GL_POLYGON)
 
         glTexCoord2f(self.landH, self.landH)
-        glVertex3f(self.landLength, 0, self.cont * self.landLength)
+        glVertex3f(self.landLength*glutGet(GLUT_SCREEN_WIDTH)/600.0, 0, self.cont * self.landLength)
 
         glTexCoord2f(self.landH, self.landW)
-        glVertex3f(self.landLength, 0, -self.landLength)
+        glVertex3f(self.landLength*glutGet(GLUT_SCREEN_WIDTH)/600.0, 0, -self.landLength)
 
         glTexCoord2f(self.landW, self.landW)
-        glVertex3f(-self.landLength, 0, -self.landLength)
+        glVertex3f(-self.landLength*glutGet(GLUT_SCREEN_WIDTH)/600.0, 0, -self.landLength)
 
         glTexCoord2f(self.landW, self.landH)
-        glVertex3f(-self.landLength, 0, self.cont * self.landLength)
+        glVertex3f(-self.landLength*glutGet(GLUT_SCREEN_WIDTH)/600.0, 0, self.cont * self.landLength)
         glEnd()
 
         glDisable(GL_TEXTURE_2D)
@@ -185,27 +187,33 @@ def display():
         star.draw()
     # if (usedDiamond == False):
     #     diamondObj.draw()
-    
+
     glScalef(mvy/200.0, mvy/200.0, mvy/200.0);
     jeepObj.draw()
     jeepObj.drawW1()
     jeepObj.drawW2()
     jeepObj.drawLight()
+
     Abird.draw()
     #glEnable(GL_LIGHTING)
     #personObj.draw()
+
+
     glutSwapBuffers()
 
 def idle():#--------------with more complex display items like turning wheel---
     global tickTime, prevTime, score
-    global time300msRef
+    global timeRef
     jeepObj.rotateWheel(-0.1 * tickTime)    
     glutPostRedisplay()
 
     curTime = glutGet(GLUT_ELAPSED_TIME)
-    if (curTime -time300msRef > 300):
-        time300msRef = curTime
+    if (curTime -timeRef > timeUp):
+        timeRef = curTime
         lightSet.changeLightDirection()
+        if (isAnimated == True):
+            jeepObj.animate()
+            Abird.animate()
 
     tickTime =  curTime - prevTime
     prevTime = curTime
@@ -292,7 +300,7 @@ def specialKeys(keypress, mX, mY):
     pass
 
 def myKeyboard(key, mX, mY):
-    global eyeX, eyeY, eyeZ, angle, radius, helpWindow, centered, helpWin, overReason, topView, behindView
+    global eyeX, eyeY, eyeZ, angle, radius, helpWindow, centered, helpWin, overReason, topView, behindView,isAnimated
     if key == "h":
         print ("h pushed " + str(helpWindow))
         winNum = glutGetWindow()
@@ -370,6 +378,12 @@ def myKeyboard(key, mX, mY):
         elif (behindView == False):
             behindView = True
         setView()
+    elif key == "m":
+        #animation
+        if (isAnimated == False):
+            isAnimated = True
+        else:
+            isAnimated = False 
     elif key == "q" and canStart == True:
         overReason = "You decided to quit!"
         gameOver()
@@ -500,8 +514,11 @@ def showHelp():
     glColor3f(1.0,0.0,0.0)
     drawTextBitmap("Help Guide" , -0.2, 0.85)
     glColor3f(0.0,0.0,1.0)
-    drawTextBitmap("The control of Jeep" , -1.0, 0.7)
-    drawTextBitmap("Right click for light and screen setting" , -1.0, 1.4)
+    drawTextBitmap("Right click for light and screen setting" , -1.0, 0.7)
+    glColor3f(0.0,0.0,1.0)
+    drawTextBitmap("Press m for animation" , -1.0, 0.5)
+    glColor3f(0.0,0.0,1.0)
+    drawTextBitmap("Press q for exit" , -1.0, 0.3)
     glutSwapBuffers()
 
 #----------------------------------------------texture development-----------
