@@ -131,24 +131,24 @@ class lightSetting:
         glutPostRedisplay()
 
     def directionOn(self):
-        glutChangeToMenuEntry(6, "direction off", DIREC_OFF)
+        glutChangeToMenuEntry(5, "direction off", DIREC_OFF)
         self.isEnableDirectLight = True
         glutPostRedisplay()
 
 
     def directionOff(self):
-        glutChangeToMenuEntry(6, "direction on", DIREC_ON)
+        glutChangeToMenuEntry(5, "direction on", DIREC_ON)
         self.isEnableDirectLight = False
         glutPostRedisplay()
 
     def spotLightOn(self):
-        glutChangeToMenuEntry(7, "Spotlight off", SPOT_OFF)
+        glutChangeToMenuEntry(6, "Spotlight off", SPOT_OFF)
         self.isEnableSpotLights = True
         glutPostRedisplay()
 
 
     def spotLightOff(self):
-        glutChangeToMenuEntry(7, "Spotlight on", SPOT_ON)
+        glutChangeToMenuEntry(6, "Spotlight on", SPOT_ON)
         self.isEnableSpotLights = False
         glutPostRedisplay()
 
