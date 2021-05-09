@@ -5,6 +5,7 @@
 - Started date : 2021, April 13
 - Due date     : 2021, April 22
 - Price        : 1900 THB
+- Payment method : SCB to SCB (Siam Commercial Bank)
 
 ## Requirement
 
