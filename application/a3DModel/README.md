@@ -1,5 +1,12 @@
 # A 3D Model
 
+## Info
+- Stared date : 2021, February 14
+- Due date    : 2021, February 27
+- Price       : 0.2159817 LTC - Litecoin (Cyptocurrency)
+
+## Requirement
+
 Hallo, ich brauche jemanden, der mir ein 3D-Modell in einem vorgegebenen OpenGL-Template (Anhang) erstellt. Vorgaben für das Projekt:
 
 
