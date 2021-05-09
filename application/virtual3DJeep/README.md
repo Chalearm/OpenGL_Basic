@@ -1,10 +1,12 @@
 
 #virtual 3D Jeep
 
+##Info##
 Started date : 2021, April 13
 Due date     : 2021, April 22
 Price        : 1900 THB
 
+##Requirement##
 Hi, I’m looking for someone who can help me extend my program to 3D virtual jeep game using Open GL.
 I will provide you with the basic program. The extended part are as follow:
 1) Create one new object with colour and texture properties, and materials and they should be in reasonable location
